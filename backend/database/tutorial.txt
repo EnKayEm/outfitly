@@ -1,0 +1,12 @@
+
+To make it work, while inside backend/ on Linux:
+
+python -m venv venv
+source ./venv/bin/activate
+docker compose up --build -d
+docker compose exec backend python manage.py makemigrations
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+
+next go to http://localhost:8000/admin/ and login, you should see
+Groups which contains tables from ERD. Database is thus complete.
