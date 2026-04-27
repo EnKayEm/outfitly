@@ -107,7 +107,7 @@ Większość endpointów wymaga nagłówka: `Authorization: Bearer <access_token
 | `/clothes/<id>/update/` | `PUT` | Edycja danych ubrania | Poprawka koloru, opisu lub kategorii |
 | `/clothes/<id>/` | `DELETE` | Usunięcie ubrania | Czyści rekord i plik z serwera |
 
-> **🛡️ AI Bouncer:** Jeśli użytkownik wyśle zdjęcie, które nie jest ubraniem (np. murzyn), API zwróci `400 Bad Request` z komunikatem o błędzie i nie zapisze pliku.
+> **🛡️ AI Bouncer:** Jeśli użytkownik wyśle zdjęcie, które nie jest ubraniem, API zwróci `400 Bad Request` z komunikatem o błędzie i nie zapisze pliku.
 
 ---
 
