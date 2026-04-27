@@ -96,8 +96,9 @@ def suggest_outfit(request):
 
     return Response({
         'occasion': occasion,
-        'suggested_outfit_ids': ai_data['outfit_ids'],
-        'message': 'Oto propozycja stylizacji od Twojego osobistego asystenta!'
+        'suggested_outfit_ids': outfit_ids,
+        'composition_id': new_composition.id if outfit_ids else None,
+        'message': 'Stylizacja została wygenerowana i zapisana w Twojej kolekcji!'
     }, status=status.HTTP_200_OK)
 
 # Pobieranie wszystkich ubrań użytkownika - GET /api/clothes/
@@ -184,3 +185,18 @@ def manual_upload_cloth(request):
         'message': 'Ubranie dodane ręcznie bez użycia AI!',
         'id': cloth.id
     }, status=status.HTTP_201_CREATED)
+
+# Pobieranie wszystkich kompozycji użytkownika - GET /api/compositions/
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_compositions(request):
+    compositions = Composition.objects.filter(user=request.user)
+    data = []
+    for comp in compositions:
+        data.append({
+            'id': comp.id,
+            'occasion': comp.target_event,
+            'date': comp.created_at, # o ile masz takie pole w modelu
+            'clothes': list(comp.clothes.values('id', 'color', 'description'))
+        })
+    return Response(data)

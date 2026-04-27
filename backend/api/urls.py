@@ -11,7 +11,9 @@ urlpatterns = [
 
     path('clothes/', views.get_user_clothes, name='get_clothes'),
     path('clothes/<int:pk>/', views.delete_cloth, name='delete_cloth'),
-    
+
     path('clothes/<int:pk>/update/', views.update_cloth, name='update_cloth'),
     path('clothes/manual/', views.manual_upload_cloth, name='manual_upload_cloth'),
+
+    path('compositions/', views.get_user_compositions, name='get_compositions'),
 ]
