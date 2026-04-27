@@ -87,6 +87,45 @@ Aplikacja integruje się z modelem Gemini w celu:
 - **Automatycznej kategoryzacji:** Rozpoznawanie typu odzieży, koloru i materiału na podstawie przesłanego zdjęcia.
 - **Sugestii Outfitów:** Generowanie zestawów ubrań na podstawie okazji (np. praca, randka, siłownia) przy użyciu analizy posiadanej garderoby.
 
+## 🔐 Autoryzacja
+Większość endpointów wymaga nagłówka: `Authorization: Bearer <access_token>`
+
+| Endpoint | Metoda | Opis |
+| :--- | :--- | :--- |
+| `/auth/login/` | `POST` | Pobranie tokenów (Login + Hasło) |
+| `/auth/refresh/` | `POST` | Odświeżenie wygasłego tokena Access |
+
+---
+
+## 👕 Zarządzanie Szafą (Wardrobe CRUD)
+
+| Endpoint | Metoda | Opis | Uwagi |
+| :--- | :--- | :--- | :--- |
+| `/clothes/` | `GET` | Lista wszystkich ubrań użytkownika | Zawiera linki do zdjęć i tagi |
+| `/clothes/upload/` | `POST` | **AI Upload** (Prześlij zdjęcie) | Gemini automatycznie opisuje i taguje ciuch |
+| `/clothes/manual/` | `POST` | Ręczne dodanie ubrania | Pomija analizę AI |
+| `/clothes/<id>/update/` | `PUT` | Edycja danych ubrania | Poprawka koloru, opisu lub kategorii |
+| `/clothes/<id>/` | `DELETE` | Usunięcie ubrania | Czyści rekord i plik z serwera |
+
+> **🛡️ AI Bouncer:** Jeśli użytkownik wyśle zdjęcie, które nie jest ubraniem, API zwróci `400 Bad Request` z komunikatem o błędzie i nie zapisze pliku.
+
+---
+
+## 🧠 AI Stylista i Kompozycje
+
+| Endpoint | Metoda | Opis | Body |
+| :--- | :--- | :--- | :--- |
+| `/clothes/suggest/` | `POST` | **Generuj Stylizację** | `{"occasion": "Wesele"}` |
+| `/compositions/` | `GET` | Historia zapisanych zestawów | Zwraca zestawy z pełnymi danymi ubrań |
+
+---
+
+## 📂 Przechowywanie Danych (Storage)
+* **Zdjęcia:** Tymczasowo przechowywane lokalnie w wolumenie Dockera `/app/media`. 
+* **Pole image_url:** Backend zwraca pełny adres (absolutny URI), dzięki czemu Frontend (React) może bezpośrednio wyświetlać grafiki.
+
+---
+
 ## 👥 Zespół Projektowy
 
 - **Backend:** Bartłomiej Zygmunt, Norbert Mazur
