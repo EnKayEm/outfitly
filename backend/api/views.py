@@ -2,18 +2,21 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 from database.models import Cloth, Category, OutfitlyUser
 from .ai_service import analyze_cloth_image
 from .ai_service import generate_stylization
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def upload_and_analyze_cloth(request):
     if 'image' not in request.FILES:
         return Response({'error': 'Brak zdjęcia w zapytaniu.'}, status=status.HTTP_400_BAD_REQUEST)
 
     image_file = request.FILES['image']
     
-    user = OutfitlyUser.objects.first() 
+    user = request.user
     if not user:
         return Response({'error': 'Musisz najpierw stworzyć użytkownika w bazie (np. przez panel admina).'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -54,12 +57,13 @@ def upload_and_analyze_cloth(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def suggest_outfit(request):
     occasion = request.data.get('occasion')
     if not occasion:
         return Response({'error': 'Musisz podać okazję (klucz "occasion").'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = OutfitlyUser.objects.first()
+    user = request.user
     clothes = Cloth.objects.filter(user=user)
 
     if not clothes.exists():
