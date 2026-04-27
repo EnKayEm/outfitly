@@ -10,6 +10,7 @@ urlpatterns = [
     path('clothes/suggest/', views.suggest_outfit, name='suggest_outfit'),
 
     path('clothes/', views.get_user_clothes, name='get_clothes'),
+    path('clothes/<int:pk>/', views.get_cloth_detail, name='get_cloth_detail'),
     path('clothes/<int:pk>/', views.delete_cloth, name='delete_cloth'),
 
     path('clothes/<int:pk>/update/', views.update_cloth, name='update_cloth'),

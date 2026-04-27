@@ -102,6 +102,7 @@ Większość endpointów wymaga nagłówka: `Authorization: Bearer <access_token
 | Endpoint | Metoda | Opis | Uwagi |
 | :--- | :--- | :--- | :--- |
 | `/clothes/` | `GET` | Lista wszystkich ubrań użytkownika | Zawiera linki do zdjęć i tagi |
+| `/clothes/<id>/` | `GET` | Detale ubrania | Pobiera dane konkretnej sztuki |
 | `/clothes/upload/` | `POST` | **AI Upload** (Prześlij zdjęcie) | Gemini automatycznie opisuje i taguje ciuch |
 | `/clothes/manual/` | `POST` | Ręczne dodanie ubrania | Pomija analizę AI |
 | `/clothes/<id>/update/` | `PUT` | Edycja danych ubrania | Poprawka koloru, opisu lub kategorii |

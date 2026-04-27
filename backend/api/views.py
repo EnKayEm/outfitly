@@ -123,6 +123,23 @@ def get_user_clothes(request):
         
     return Response(data, status=status.HTTP_200_OK)
 
+# Pobieranie szczegółów konkretnego ubrania - GET /api/clothes/<id>/
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_cloth_detail(request, pk):
+    try:
+        cloth = Cloth.objects.get(pk=pk, user=request.user)
+        
+        return Response({
+            'id': cloth.id,
+            'color': cloth.color,
+            'description': cloth.description,
+            'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None,
+            'categories': list(cloth.category_set.values_list('name', flat=True))
+        }, status=status.HTTP_200_OK)
+    except Cloth.DoesNotExist:
+        return Response({'error': 'Nie znaleziono takiego ubrania lub nie masz do niego dostępu.'}, status=status.HTTP_404_NOT_FOUND)
+
 # Usuwanie ubrania - DELETE /api/clothes/<id>/
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
