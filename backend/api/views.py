@@ -26,6 +26,10 @@ def upload_and_analyze_cloth(request):
 
     ai_data = analyze_cloth_image(cloth.image.path)
 
+    if ai_data.get('error') == 'not_clothing':
+        cloth.delete()
+        return Response({'error': 'To nie wygląda na ubranie. Prześlij inne zdjęcie.'}, status=status.HTTP_400_BAD_REQUEST)
+
     if not ai_data:
         cloth.delete()
         return Response({'error': 'AI nie dało rady przeanalizować zdjęcia.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
