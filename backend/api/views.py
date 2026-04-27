@@ -190,13 +190,24 @@ def manual_upload_cloth(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_compositions(request):
-    compositions = Composition.objects.filter(user=request.user)
+    compositions = Composition.objects.filter(user=request.user).prefetch_related('clothes').order_by('-id')
+    
     data = []
     for comp in compositions:
+        clothes_list = []
+        for cloth in comp.clothes.all():
+            clothes_list.append({
+                'id': cloth.id,
+                'color': cloth.color,
+                'description': cloth.description,
+                'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None
+            })
+            
         data.append({
             'id': comp.id,
             'occasion': comp.target_event,
-            'date': comp.created_at, # o ile masz takie pole w modelu
-            'clothes': list(comp.clothes.values('id', 'color', 'description'))
+            'created_at': comp.created_at if hasattr(comp, 'created_at') else "Brak daty",
+            'clothes': clothes_list
         })
-    return Response(data)
+        
+    return Response(data, status=status.HTTP_200_OK)
