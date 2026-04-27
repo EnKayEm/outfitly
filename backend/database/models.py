@@ -61,6 +61,8 @@ class Cloth(models.Model):
         
     color       = models.CharField(max_length=32, blank=True)
     description = models.CharField(max_length=512, blank=True)
+
+    image = models.ImageField(upload_to='clothes/', null=True, blank=True)
     
     # Is automatically set after a record creation
     creation_date   = models.DateTimeField(auto_now_add=True)
