@@ -34,6 +34,9 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+# [Bartolomeo]: Must-have for custom auth user
+AUTH_USER_MODEL = "database.OutfitlyUser"
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,6 +47,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
+    
+    'database'  # [Bartolomeo]: PostgreSQL 15 database build
 ]
 
 MIDDLEWARE = [
