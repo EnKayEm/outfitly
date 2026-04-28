@@ -8,18 +8,22 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filtry i sortowanie
+  // Stany dla filtrów i sortowania
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedColors, setSelectedColors] = useState([]); // Nowy stan dla kolorów
   const [sortBy, setSortBy] = useState('newest');
+
+  // Stany dla otwarcia dropdownów
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isColorOpen, setIsColorOpen] = useState(false); // Dropdown kolorów
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  // Refy do wykrywania kliknięć poza elementami
+  // Refy do zamykania przy kliknięciu w tło
   const filterRef = useRef(null);
+  const colorRef = useRef(null);
   const sortRef = useRef(null);
 
-  // Wywalamy bzdurne opcje sortowania, zostawiamy konkret
   const sortOptions = [
     { id: 'newest', label: 'Najnowsze dodane' },
     { id: 'oldest', label: 'Najstarsze dodane' }
@@ -40,11 +44,14 @@ export default function Dashboard() {
     fetchClothes();
   }, []);
 
-  // Obsługa kliknięcia poza dropdowny
+  // Globalny nasłuchiwacz kliknięć poza elementami
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
         setIsFilterOpen(false);
+      }
+      if (colorRef.current && !colorRef.current.contains(event.target)) {
+        setIsColorOpen(false);
       }
       if (sortRef.current && !sortRef.current.contains(event.target)) {
         setIsSortOpen(false);
@@ -55,6 +62,7 @@ export default function Dashboard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Dynamiczne wyciąganie dostępnych kategorii
   const availableCategories = useMemo(() => {
     const cats = new Set();
     clothes.forEach(item => {
@@ -63,35 +71,59 @@ export default function Dashboard() {
     return Array.from(cats).sort();
   }, [clothes]);
 
+  // Dynamiczne wyciąganie dostępnych kolorów (z małym zabezpieczeniem, żeby ujednolicić wielkość liter)
+  const availableColors = useMemo(() => {
+    const colors = new Set();
+    clothes.forEach(item => {
+      if (item.color) {
+        // Kapitalizujemy pierwszą literę, żeby uniknąć duplikatów typu "zielony" i "Zielony"
+        const formattedColor = item.color.charAt(0).toUpperCase() + item.color.slice(1).toLowerCase();
+        colors.add(formattedColor);
+        // Nadpisujemy oryginalny kolor w obiekcie dla spójności podczas filtrowania
+        item.normalizedColor = formattedColor; 
+      }
+    });
+    return Array.from(colors).sort();
+  }, [clothes]);
+
+  // Serce logiki
   const processedClothes = useMemo(() => {
     let result = [...clothes];
 
+    // 1. Wyszukiwanie (Tylko po opisie!)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(item => 
-        item.description?.toLowerCase().includes(q) || 
-        item.color?.toLowerCase().includes(q)
+        item.description?.toLowerCase().includes(q)
       );
     }
 
+    // 2. Filtr Kategorii
     if (selectedCategories.length > 0) {
       result = result.filter(item => 
         item.categories?.some(cat => selectedCategories.includes(cat))
       );
     }
 
-    // Proste i logiczne sortowanie
+    // 3. Filtr Kolorów
+    if (selectedColors.length > 0) {
+      result = result.filter(item => 
+        selectedColors.includes(item.normalizedColor)
+      );
+    }
+
+    // 4. Sortowanie
     result.sort((a, b) => (sortBy === 'newest' ? b.id - a.id : a.id - b.id));
 
     return result;
-  }, [clothes, searchQuery, sortBy, selectedCategories]);
+  }, [clothes, searchQuery, selectedCategories, selectedColors, sortBy]);
 
   const toggleCategory = (category) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category) 
-        : [...prev, category]
-    );
+    setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]);
+  };
+
+  const toggleColor = (color) => {
+    setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
   };
 
   const activeSortLabel = sortOptions.find(opt => opt.id === sortBy)?.label || 'Sortuj';
@@ -102,9 +134,10 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-slate-800">Twoja Szafa 👗</h1>
         
         <div className="flex flex-wrap w-full lg:w-auto gap-3">
+          {/* Szukajka */}
           <input
             type="text"
-            placeholder="Szukaj..."
+            placeholder="Szukaj po nazwie..."
             className="flex-1 min-w-[150px] px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -115,6 +148,7 @@ export default function Dashboard() {
             <button 
               onClick={() => {
                 setIsFilterOpen(!isFilterOpen);
+                setIsColorOpen(false);
                 setIsSortOpen(false);
               }}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
@@ -146,11 +180,53 @@ export default function Dashboard() {
                   )}
                 </div>
                 {selectedCategories.length > 0 && (
-                  <button 
-                    onClick={() => setSelectedCategories([])}
-                    className="w-full mt-2 pt-2 border-t border-slate-100 text-xs text-red-500 hover:text-red-700 font-medium text-center"
-                  >
+                  <button onClick={() => setSelectedCategories([])} className="w-full mt-2 pt-2 border-t border-slate-100 text-xs text-red-500 hover:text-red-700 font-medium text-center">
                     Wyczyść filtry
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* DROPDOWN KOLORÓW */}
+          <div className="relative" ref={colorRef}>
+            <button 
+              onClick={() => {
+                setIsColorOpen(!isColorOpen);
+                setIsFilterOpen(false);
+                setIsSortOpen(false);
+              }}
+              className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
+                selectedColors.length > 0 ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 bg-white'
+              }`}
+            >
+              Kolory {selectedColors.length > 0 && `(${selectedColors.length})`}
+              <span className={`text-[10px] transition-transform ${isColorOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+
+            {isColorOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-3">
+                <div className="text-xs font-bold text-slate-400 mb-2 uppercase px-2">Filtruj kolor:</div>
+                <div className="max-h-48 overflow-y-auto">
+                  {availableColors.length > 0 ? (
+                    availableColors.map(color => (
+                      <label key={color} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                          checked={selectedColors.includes(color)}
+                          onChange={() => toggleColor(color)}
+                        />
+                        <span className="text-sm text-slate-700">{color}</span>
+                      </label>
+                    ))
+                  ) : (
+                    <div className="text-sm text-slate-400 p-2 italic">Brak kolorów</div>
+                  )}
+                </div>
+                {selectedColors.length > 0 && (
+                  <button onClick={() => setSelectedColors([])} className="w-full mt-2 pt-2 border-t border-slate-100 text-xs text-red-500 hover:text-red-700 font-medium text-center">
+                    Wyczyść kolory
                   </button>
                 )}
               </div>
@@ -163,6 +239,7 @@ export default function Dashboard() {
               onClick={() => {
                 setIsSortOpen(!isSortOpen);
                 setIsFilterOpen(false);
+                setIsColorOpen(false);
               }}
               className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center gap-2 transition-colors h-full min-w-[170px] justify-between"
             >
@@ -201,7 +278,7 @@ export default function Dashboard() {
           processedClothes.map(item => <ClothingCard key={item.id} item={item} />)
         ) : (
           <div className="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-100 rounded-2xl">
-            Nie znaleziono ubrań.
+            Nie znaleziono ubrań dla podanych kryteriów.
           </div>
         )}
       </div>
