@@ -19,6 +19,7 @@ def analyze_cloth_image(image_path):
     - "color": (główny kolor ubrania, np. "Czarny", "Niebieski")
     - "category": (tablica/lista stringów. Musi zawierać TYP ubrania np. "T-shirt", "Koszula", "Spodnie" ORAZ PASUJĄCE OKAZJE/STYL np. "Na co dzień", "Praca", "Eleganckie", "Sport", "Zima")
     - "description": (krótki, zwięzły opis ubrania, max 100 znaków)
+    BARDZO WAŻNE: Jeśli na przesłanym zdjęciu nie znajduje się element garderoby (ubranie, buty, dodatki), zwróć TYLKO json: {'error': 'not_clothing'}. Nie opisuj tego zdjęcia.
     """
 
     try:
