@@ -2,10 +2,23 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from database.models import Cloth, Category, OutfitlyUser, Composition
 from .ai_service import analyze_cloth_image
 from .ai_service import generate_stylization
+
+# Endpoint do wylogowania użytkownika - POST /api/logout/
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+    try:
+        refresh_token = request.data.get("refresh")
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({"message": "Wylogowano pomyślnie."}, status=status.HTTP_205_RESET_CONTENT)
+    except Exception:
+        return Response({"error": "Błędny token lub już wygasł."}, status=status.HTTP_400_BAD_REQUEST)
 
 # Endpoint do uploadu zdjęcia ubrania i jego analizy przez AI - POST /api/clothes/upload/
 @api_view(['POST'])
@@ -101,7 +114,7 @@ def suggest_outfit(request):
     return Response({
         'occasion': occasion,
         'suggested_outfit_ids': outfit_ids,
-        'composition_id': new_composition.id if outfit_ids else None,
+        'composition_id': composition.id if outfit_ids else None,
         'message': 'Stylizacja została wygenerowana i zapisana w Twojej kolekcji!'
     }, status=status.HTTP_200_OK)
 
@@ -123,33 +136,27 @@ def get_user_clothes(request):
         
     return Response(data, status=status.HTTP_200_OK)
 
-# Pobieranie szczegółów konkretnego ubrania - GET /api/clothes/<id>/
-@api_view(['GET'])
+# Pobieranie szczegółów lub usuwanie konkretnego ubrania - GET /api/clothes/<id>/
+@api_view(['GET', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def get_cloth_detail(request, pk):
+def cloth_detail_or_delete(request, pk):
     try:
         cloth = Cloth.objects.get(pk=pk, user=request.user)
-        
+    except Cloth.DoesNotExist:
+        return Response({'error': 'Nie znaleziono ubrania.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
         return Response({
             'id': cloth.id,
             'color': cloth.color,
             'description': cloth.description,
             'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None,
             'categories': list(cloth.category_set.values_list('name', flat=True))
-        }, status=status.HTTP_200_OK)
-    except Cloth.DoesNotExist:
-        return Response({'error': 'Nie znaleziono takiego ubrania lub nie masz do niego dostępu.'}, status=status.HTTP_404_NOT_FOUND)
+        })
 
-# Usuwanie ubrania - DELETE /api/clothes/<id>/
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def delete_cloth(request, pk):
-    try:
-        cloth = Cloth.objects.get(pk=pk, user=request.user)
+    elif request.method == 'DELETE':
         cloth.delete()
-        return Response({'message': 'Ubranie zostało pomyślnie usunięte z szafy.'}, status=status.HTTP_204_NO_CONTENT)
-    except Cloth.DoesNotExist:
-        return Response({'error': 'Ubranie nie istnieje lub nie masz do niego dostępu.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # Aktualizacja ubrania (np. zmiana kategorii, kolorystyki, opisu) - PUT /api/clothes/<id>/

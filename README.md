@@ -94,6 +94,7 @@ Większość endpointów wymaga nagłówka: `Authorization: Bearer <access_token
 | :--- | :--- | :--- |
 | `/auth/login/` | `POST` | Pobranie tokenów (Login + Hasło) |
 | `/auth/refresh/` | `POST` | Odświeżenie wygasłego tokena Access |
+| `/auth/logout/` | `POST` | Wylogowanie |
 
 ---
 
@@ -103,10 +104,10 @@ Większość endpointów wymaga nagłówka: `Authorization: Bearer <access_token
 | :--- | :--- | :--- | :--- |
 | `/clothes/` | `GET` | Lista wszystkich ubrań użytkownika | Zawiera linki do zdjęć i tagi |
 | `/clothes/<id>/` | `GET` | Detale ubrania | Pobiera dane konkretnej sztuki |
+| `/clothes/<id>/` | `DELETE` | Usunięcie ubrania | Czyści rekord i plik z serwera |
 | `/clothes/upload/` | `POST` | **AI Upload** (Prześlij zdjęcie) | Gemini automatycznie opisuje i taguje ciuch |
 | `/clothes/manual/` | `POST` | Ręczne dodanie ubrania | Pomija analizę AI |
 | `/clothes/<id>/update/` | `PUT` | Edycja danych ubrania | Poprawka koloru, opisu lub kategorii |
-| `/clothes/<id>/` | `DELETE` | Usunięcie ubrania | Czyści rekord i plik z serwera |
 
 > **🛡️ AI Bouncer:** Jeśli użytkownik wyśle zdjęcie, które nie jest ubraniem, API zwróci `400 Bad Request` z komunikatem o błędzie i nie zapisze pliku.
 
