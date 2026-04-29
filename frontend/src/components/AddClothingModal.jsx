@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
+import { Bot, Camera, Sparkles, PencilLine, Save, X } from 'lucide-react';
 
 //Poprawić dane wprowadzane ręcznie 
 
@@ -58,14 +59,14 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess, available
     setError(null);
     
     const formData = new FormData();
-    formData.append('image', file); // Zmień na właściwą nazwę pola, jeśli backend wymaga innej
+    formData.append('image', file); 
 
     try {
       await api.post('clothes/upload/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      onSuccess(); // Odświeża siatkę w Dashboard
-      onClose(); // Zamyka modal
+      onSuccess();
+      onClose(); 
     } catch (err) {
       setIsAnalyzing(false);
       if (err.response?.status === 400) {
@@ -125,7 +126,7 @@ const toggleCategory = (cat) => {
     if (cleanCat && !manualData.categories.includes(cleanCat)) {
       setManualData(prev => ({...prev, categories: [...prev.categories, cleanCat]}));
     }
-    setCustomCategory(''); // Czyścimy input
+    setCustomCategory('');
   };
 
   return (
@@ -134,11 +135,12 @@ const toggleCategory = (cat) => {
         
         {/* Nagłówek Modala */}
         <div className="flex justify-between items-center p-4 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-800">
-            {isManualMode ? 'Dodaj ubranie ręcznie' : 'Zeskanuj ubranie AI 🤖'}
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            {isManualMode ? <PencilLine className="w-5 h-5 text-slate-600" /> : <Bot className="w-5 h-5 text-blue-600" />}
+            {isManualMode ? 'Dodaj ubranie ręcznie' : 'Zeskanuj ubranie AI'}
           </h2>
           <button onClick={onClose} disabled={isAnalyzing} className="text-slate-400 hover:text-slate-600 disabled:opacity-50">
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -157,7 +159,7 @@ const toggleCategory = (cat) => {
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-colors"
               >
-                <div className="text-4xl mb-2">📸</div>
+                <Camera className="w-12 h-12 mx-auto mb-2 text-slate-400" strokeWidth={1.5} />
                 <p className="text-slate-600 font-medium">Kliknij, aby wybrać zdjęcie</p>
                 <p className="text-slate-400 text-sm mt-1">JPG, PNG (max 5MB)</p>
               </div>
@@ -283,8 +285,8 @@ const toggleCategory = (cat) => {
             <div className="flex flex-col gap-2 mt-4">
               {!isManualMode ? (
                 <>
-                  <button onClick={handleAIUpload} disabled={isAnalyzing} className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 transition-colors">
-                    {isAnalyzing ? 'Przetwarzanie AI...' : 'Zeskanuj ubranie AI ✨'}
+                  <button onClick={handleAIUpload} disabled={isAnalyzing} className="w-full flex justify-center items-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-400 transition-colors">
+                    <Sparkles className="w-5 h-5" /> {isAnalyzing ? 'Przetwarzanie AI...' : 'Zeskanuj ubranie AI'}
                   </button>
                   <button onClick={() => setIsManualMode(true)} disabled={isAnalyzing} className="w-full text-slate-500 py-2 text-sm hover:text-slate-700">
                     Skanowanie zawiodło? Dodaj ręcznie
@@ -292,8 +294,8 @@ const toggleCategory = (cat) => {
                 </>
               ) : (
                 <>
-                  <button type="submit" form="manual-form" disabled={isAnalyzing} className="w-full bg-slate-800 text-white py-3 rounded-lg font-medium hover:bg-slate-900 disabled:opacity-70 transition-colors">
-                    {isAnalyzing ? 'Zapisywanie...' : 'Zapisz ubranie'}
+                  <button type="submit" form="manual-form" disabled={isAnalyzing} className="w-full flex justify-center items-center gap-2 bg-slate-800 text-white py-3 rounded-lg font-medium hover:bg-slate-900 disabled:opacity-70 transition-colors">
+                    <Save className="w-5 h-5" /> {isAnalyzing ? 'Zapisywanie...' : 'Zapisz ubranie'}
                   </button>
                   <button onClick={() => setIsManualMode(false)} disabled={isAnalyzing} className="w-full text-blue-500 py-2 text-sm hover:text-blue-700">
                     Wróć do skanowania AI

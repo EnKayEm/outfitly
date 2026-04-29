@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
+import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags } from 'lucide-react';
 
 export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSuccess, availableCategories = [] }) {
   const [clothing, setClothing] = useState(null);
@@ -150,7 +151,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             disabled={isSaving || isDeleting}
             className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors disabled:opacity-50"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -186,15 +187,15 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                   // TRYB ODCZYTU
                   <>
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Opis</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><AlignLeft className="w-3 h-3" /> Opis</p>
                       <h3 className="text-xl font-semibold text-slate-800">{clothing.description || 'Brak opisu'}</h3>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Kolor</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Palette className="w-3 h-3" /> Kolor</p>
                       <p className="text-slate-700 font-medium capitalize">{clothing.color || 'Brak koloru'}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Kategorie</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Tags className="w-3 h-3" /> Kategorie</p>
                       <div className="flex flex-wrap gap-2">
                         {clothing.categories && clothing.categories.length > 0 ? (
                           clothing.categories.map((cat, idx) => (
@@ -282,7 +283,6 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-red-50 p-3 rounded-lg border border-red-100 animate-in fade-in">
                 <span className="text-red-700 font-medium text-sm">Czy na pewno chcesz usunąć to ubranie?</span>
                 <div className="flex gap-2 w-full sm:w-auto">
-                {/* Dodano: whitespace-nowrap, flex, items-center, justify-center i sztywne h-10 */}
                 <button onClick={() => setIsDeleteConfirmOpen(false)} disabled={isDeleting} className="flex-1 px-4 h-10 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap flex items-center justify-center transition-colors">
                     Anuluj
                 </button>
@@ -296,17 +296,17 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                 <button onClick={() => setIsEditing(false)} disabled={isSaving} className="px-5 py-2 text-slate-500 hover:bg-slate-200 rounded-lg font-medium transition-colors">
                   Anuluj
                 </button>
-                <button onClick={handleSave} disabled={isSaving} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                  {isSaving ? 'Zapisywanie...' : 'Zapisz zmiany'}
+                <button onClick={handleSave} disabled={isSaving} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                  <Save className="w-4 h-4" /> {isSaving ? 'Zapisywanie...' : 'Zapisz zmiany'}
                 </button>
               </div>
             ) : (
               <div className="flex justify-between items-center">
-                <button onClick={() => setIsDeleteConfirmOpen(true)} className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-medium transition-colors text-sm">
-                  Usuń ubranie
+                <button onClick={() => setIsDeleteConfirmOpen(true)} className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-medium transition-colors text-sm flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" /> Usuń ubranie
                 </button>
-                <button onClick={handleEditClick} className="px-6 py-2 bg-slate-800 text-white rounded-lg font-medium hover:bg-slate-900 transition-colors shadow-sm">
-                  Edytuj
+                <button onClick={handleEditClick} className="px-6 py-2 bg-slate-800 text-white rounded-lg font-medium hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-2">
+                  <Pencil className="w-4 h-4" /> Edytuj
                 </button>
               </div>
             )}
