@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../api/axiosConfig';
 import ClothingCard from '../components/ClothingCard';
 import ClothingSkeleton from '../components/ClothingSkeleton';
+import AddClothingModal from '../components/AddClothingModal';
 
 export default function Dashboard() {
   const [clothes, setClothes] = useState([]);
@@ -24,25 +25,28 @@ export default function Dashboard() {
   const colorRef = useRef(null);
   const sortRef = useRef(null);
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const sortOptions = [
-    { id: 'newest', label: 'Najnowsze dodane' },
-    { id: 'oldest', label: 'Najstarsze dodane' }
+    { id: 'newest', label: 'Najnowsze' },
+    { id: 'oldest', label: 'Najstarsze' }
   ];
 
-  useEffect(() => {
-    const fetchClothes = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get('clothes/');
-        setClothes(response.data);
-      } catch (err) {
-        setError('Błąd ładowania szafy.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchClothes();
-  }, []);
+useEffect(() => {
+  const fetchClothes = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('clothes/');
+      setClothes(response.data);
+    } catch (err) {
+      setError('Błąd ładowania szafy.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchClothes();
+}, [refreshTrigger]);
 
   // Globalny nasłuchiwacz kliknięć poza elementami
   useEffect(() => {
@@ -241,10 +245,13 @@ export default function Dashboard() {
                 setIsFilterOpen(false);
                 setIsColorOpen(false);
               }}
-              className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center gap-2 transition-colors h-full min-w-[170px] justify-between"
+              className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center justify-between gap-2 transition-colors h-full hover:bg-slate-50 min-w-[190px]"
             >
-              <span className="truncate">{activeSortLabel}</span>
-              <span className={`text-[10px] transition-transform ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
+              <span className="font-medium text-slate-800 truncate">
+                <span className="text-slate-500 font-normal mr-1">Sortuj:</span> 
+                {activeSortLabel}
+              </span>
+              <span className={`text-[10px] text-slate-400 transition-transform ml-1 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
             {isSortOpen && (
@@ -268,6 +275,13 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <span className="text-xl">+</span> Dodaj Ubranie
+          </button>
         </div>
       </div>
 
@@ -282,6 +296,12 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      <AddClothingModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)} 
+        availableCategories={availableCategories}
+      />
     </div>
   );
 }
