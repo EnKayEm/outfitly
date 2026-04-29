@@ -3,6 +3,7 @@ import api from '../api/axiosConfig';
 import ClothingCard from '../components/ClothingCard';
 import ClothingSkeleton from '../components/ClothingSkeleton';
 import AddClothingModal from '../components/AddClothingModal';
+import ClothingDetailsModal from '../components/ClothingDetailsModal';
 
 export default function Dashboard() {
   const [clothes, setClothes] = useState([]);
@@ -27,6 +28,9 @@ export default function Dashboard() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const [selectedClothingId, setSelectedClothingId] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const sortOptions = [
     { id: 'newest', label: 'Najnowsze' },
@@ -70,7 +74,9 @@ useEffect(() => {
   const availableCategories = useMemo(() => {
     const cats = new Set();
     clothes.forEach(item => {
-      item.categories?.forEach(c => cats.add(c));
+      item.categories?.forEach(c => {
+        if (c && c.trim() !== '') cats.add(c.trim());
+      });
     });
     return Array.from(cats).sort();
   }, [clothes]);
@@ -289,7 +295,16 @@ useEffect(() => {
         {isLoading ? (
           Array.from({ length: 8 }).map((_, idx) => <ClothingSkeleton key={idx} />)
         ) : processedClothes.length > 0 ? (
-          processedClothes.map(item => <ClothingCard key={item.id} item={item} />)
+            processedClothes.map(item => (
+              <ClothingCard 
+                key={item.id} 
+                item={item} 
+                onClick={(id) => {
+                  setSelectedClothingId(id);
+                  setIsDetailsModalOpen(true);
+                }}
+              />
+          ))
         ) : (
           <div className="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-100 rounded-2xl">
             Nie znaleziono ubrań dla podanych kryteriów.
@@ -301,6 +316,16 @@ useEffect(() => {
         onClose={() => setIsAddModalOpen(false)} 
         onSuccess={() => setRefreshTrigger(prev => prev + 1)} 
         availableCategories={availableCategories}
+      />
+      <ClothingDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedClothingId(null);
+        }}
+        clothingId={selectedClothingId}
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)} // Odświeżanie po edycji/usunięciu
+        availableCategories={availableCategories} // Lista tagów do trybu edycji
       />
     </div>
   );

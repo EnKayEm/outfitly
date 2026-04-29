@@ -88,7 +88,7 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess, available
   formData.append('image', file);
   formData.append('description', manualData.description);
   formData.append('color', manualData.color);
-    
+  
   if (manualData.categories.length > 0) {
     manualData.categories.forEach(cat => formData.append('categories', cat));
   } else {
