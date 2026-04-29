@@ -300,6 +300,7 @@ useEffect(() => {
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
         onSuccess={() => setRefreshTrigger(prev => prev + 1)} 
+        availableCategories={availableCategories}
       />
     </div>
   );

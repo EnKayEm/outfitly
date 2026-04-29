@@ -2,11 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
 
 //Poprawić dane wprowadzane ręcznie 
-//Zwiększyć miejsce w pojednyczym ubraniu, by wyświetlało się węcei tekstu, (więcej miesca na początku)
-//Zmniejszyć szerokość panelu od sortowania
 
-export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
-  const [file, setFile] = useState(null);
+export default function AddClothingModal({ isOpen, onClose, onSuccess, availableCategories = [] }) {  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   
   // Stany logiki AI
@@ -15,9 +12,13 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
   
   // Stany trybu ręcznego
   const [isManualMode, setIsManualMode] = useState(false);
-  const [manualData, setManualData] = useState({ category: '', color: '', material: '' });
+  const [manualData, setManualData] = useState({ description: '', color: '', categories: [] });
+
   
   const fileInputRef = useRef(null);
+
+  const [customCategory, setCustomCategory] = useState('');
+  
 
   // Czyszczenie URL-a z pamięci przeglądarki, żeby nie robić wycieków pamięci
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
       setIsAnalyzing(false);
       setError(null);
       setIsManualMode(false);
-      setManualData({ category: '', color: '', material: '' });
+      setManualData({ description: '', color: '', categories: [] });
     }
   }, [isOpen]);
 
@@ -77,28 +78,54 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
 
   // Wysyłka w trybie ręcznym
   const handleManualUpload = async (e) => {
+  e.preventDefault();
+  if (!file) return setError('Dodaj zdjęcie!');
+
+  setIsAnalyzing(true);
+  setError(null);
+
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('description', manualData.description);
+  formData.append('color', manualData.color);
+    
+  if (manualData.categories.length > 0) {
+    manualData.categories.forEach(cat => formData.append('categories', cat));
+  } else {
+    formData.append('categories', '');
+  }
+
+  try {
+    await api.post('clothes/manual/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    onSuccess();
+    onClose();
+  } catch (err) {
+    setIsAnalyzing(false);
+    setError('Nie udało się zapisać ubrania ręcznie. Sprawdź logi serwera.');
+  }
+};
+
+const toggleCategory = (cat) => {
+    setManualData(prev => {
+      const isSelected = prev.categories.includes(cat);
+      return {
+        ...prev,
+        categories: isSelected 
+          ? prev.categories.filter(c => c !== cat) 
+          : [...prev.categories, cat]
+      };
+    });
+  };
+
+  const handleAddCustomCategory = (e) => {
     e.preventDefault();
-    if (!file) return setError('Dodaj zdjęcie!');
-
-    setIsAnalyzing(true);
-    setError(null);
-
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('category', manualData.category);
-    formData.append('color', manualData.color);
-    formData.append('material', manualData.material); // Oby to pole istniało u was na backendzie...
-
-    try {
-      await api.post('clothes/manual/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      onSuccess();
-      onClose();
-    } catch (err) {
-      setIsAnalyzing(false);
-      setError('Nie udało się zapisać ubrania ręcznie.');
+    const cleanCat = customCategory.trim();
+    if (cleanCat && !manualData.categories.includes(cleanCat)) {
+      setManualData(prev => ({...prev, categories: [...prev.categories, cleanCat]}));
     }
+    setCustomCategory(''); // Czyścimy input
   };
 
   return (
@@ -179,10 +206,75 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
 
           {/* Formularz ręczny (widoczny tylko w trybie manualnym i gdy jest plik) */}
           {isManualMode && preview && (
-            <form id="manual-form" onSubmit={handleManualUpload} className="flex flex-col gap-3 mb-4">
-              <input required type="text" placeholder="Kategoria (np. Buty)" className="p-2 border rounded-lg focus:ring-2 outline-none" value={manualData.category} onChange={e => setManualData({...manualData, category: e.target.value})} disabled={isAnalyzing}/>
-              <input required type="text" placeholder="Kolor (np. Czarny)" className="p-2 border rounded-lg focus:ring-2 outline-none" value={manualData.color} onChange={e => setManualData({...manualData, color: e.target.value})} disabled={isAnalyzing}/>
-              <input required type="text" placeholder="Materiał (np. Bawełna)" className="p-2 border rounded-lg focus:ring-2 outline-none" value={manualData.material} onChange={e => setManualData({...manualData, material: e.target.value})} disabled={isAnalyzing}/>
+            <form id="manual-form" onSubmit={handleManualUpload} className="flex flex-col gap-3">
+              <input 
+                required 
+                type="text" 
+                placeholder="Krótki opis (np. Zielona czapka)" 
+                className="p-2 border rounded-lg focus:ring-2 outline-none border-slate-200" 
+                value={manualData.description} 
+                onChange={e => setManualData({...manualData, description: e.target.value})} 
+                disabled={isAnalyzing}
+              />
+              <input 
+                required 
+                type="text" 
+                placeholder="Kolor (np. Zielony)" 
+                className="p-2 border rounded-lg focus:ring-2 outline-none border-slate-200" 
+                value={manualData.color} 
+                onChange={e => setManualData({...manualData, color: e.target.value})} 
+                disabled={isAnalyzing}
+              />
+              {/* Strefa Kategorii */}
+              <div className="flex flex-col gap-2 mt-1">
+                <span className="text-sm text-slate-600 font-medium">Kategorie:</span>
+                 
+                {/* Chmurki z istniejącymi kategoriami do wyklikania */}
+                <div className="flex flex-wrap gap-2">
+                  {availableCategories.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleCategory(cat)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        manualData.categories.includes(cat)
+                          ? 'bg-blue-100 border-blue-300 text-blue-700'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {cat} {manualData.categories.includes(cat) ? '✕' : '+'}
+                    </button>
+                  ))}
+                  
+                  {/* Ręcznie dodane tagi (te, których nie ma na liście z bazy) */}
+                  {manualData.categories.filter(c => !availableCategories.includes(c)).map(cat => (
+                    <span key={cat} className="px-3 py-1.5 rounded-full text-xs font-medium border bg-blue-100 border-blue-300 text-blue-700 flex items-center gap-1">
+                      {cat} <button type="button" onClick={() => toggleCategory(cat)} className="hover:text-blue-900 font-bold">✕</button>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Input do dodania nowej, nieistniejącej kategorii */}
+                <div className="flex gap-2 mt-1">
+                  <input 
+                    type="text" 
+                    placeholder="Własna kategoria..." 
+                    className="flex-1 p-2 border rounded-lg focus:ring-2 outline-none border-slate-200 text-sm" 
+                    value={customCategory} 
+                    onChange={e => setCustomCategory(e.target.value)} 
+                    onKeyDown={e => e.key === 'Enter' && handleAddCustomCategory(e)}
+                    disabled={isAnalyzing}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={handleAddCustomCategory}
+                    className="px-4 py-2 bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 disabled:opacity-50"
+                    disabled={isAnalyzing || !customCategory.trim()}
+                  >
+                    Dodaj
+                  </button>
+                </div>
+              </div>
             </form>
           )}
 
