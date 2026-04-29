@@ -1,6 +1,9 @@
-export default function ClothingCard({ item }) {
+export default function ClothingCard({ item, onClick }) {
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white flex flex-col">
+      <div 
+        onClick={() => onClick(item.id)} // Wywołujemy przekazaną funkcję z ID ubrania
+        className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200"
+      >      
       {/* Kontener na zdjęcie wymusza proporcje 1:1, żeby grid nie wyglądał jak schody */}
       <div className="aspect-square w-full bg-slate-50 overflow-hidden">
         <img
