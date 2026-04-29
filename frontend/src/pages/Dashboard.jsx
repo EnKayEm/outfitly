@@ -322,6 +322,8 @@ useEffect(() => {
           setSelectedClothingId(null);
         }}
         clothingId={selectedClothingId}
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)} // Odświeżanie po edycji/usunięciu
+        availableCategories={availableCategories} // Lista tagów do trybu edycji
       />
     </div>
   );
