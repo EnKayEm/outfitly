@@ -51,7 +51,6 @@ export default function Layout() {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Pastylka użytkownika */}
             <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
               <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
                 S
@@ -59,7 +58,6 @@ export default function Layout() {
               <span className="text-sm font-medium text-slate-700 hidden sm:block pr-1">Superuser</span>
             </div>
 
-            {/* Subtelny przycisk wylogowania z ikoną */}
             <button 
               onClick={handleLogout}
               className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
@@ -72,8 +70,6 @@ export default function Layout() {
 
         </div>
       </header>
-
-      {/* Główna treść aplikacji */}
       <main className="flex-grow max-w-7xl w-auto mx-auto px-4 py-8">
         <Outlet />
       </main>

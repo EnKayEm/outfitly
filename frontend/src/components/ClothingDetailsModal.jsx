@@ -283,7 +283,6 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-red-50 p-3 rounded-lg border border-red-100 animate-in fade-in">
                 <span className="text-red-700 font-medium text-sm">Czy na pewno chcesz usunąć to ubranie?</span>
                 <div className="flex gap-2 w-full sm:w-auto">
-                {/* Dodano: whitespace-nowrap, flex, items-center, justify-center i sztywne h-10 */}
                 <button onClick={() => setIsDeleteConfirmOpen(false)} disabled={isDeleting} className="flex-1 px-4 h-10 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap flex items-center justify-center transition-colors">
                     Anuluj
                 </button>

@@ -13,7 +13,6 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* NOWA ŚCIEŻKA KREATORA */}
           <Route path="/style-creator" element={<StyleCreator />} /> 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Route>

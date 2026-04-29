@@ -1,5 +1,4 @@
 export default function ClothingCard({ item, onClick, children }) {
-  // Wyłapujemy i niszczymy puste stringi [""] z backendu
   const validCategories = item.categories 
     ? item.categories.filter(cat => cat && cat.trim() !== '') 
     : [];
@@ -7,9 +6,8 @@ export default function ClothingCard({ item, onClick, children }) {
   return (
       <div 
         onClick={() => onClick(item.id)}
-        // Dodano: "group" oraz "relative" 
-        className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200"
-      >      
+        className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200 h-full"
+      >     
       <div className="aspect-square w-full bg-slate-50 overflow-hidden">
         <img
           src={item.image_url}
@@ -43,8 +41,6 @@ export default function ClothingCard({ item, onClick, children }) {
           )}
         </div>
       </div>
-
-      {/* Renderujemy przekazane elementy (np. przyciski z Kreatora) */}
       {children}
     </div>
   );

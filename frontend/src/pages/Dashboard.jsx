@@ -5,6 +5,7 @@ import ClothingSkeleton from '../components/ClothingSkeleton';
 import AddClothingModal from '../components/AddClothingModal';
 import ClothingDetailsModal from '../components/ClothingDetailsModal';
 import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export default function Dashboard() {
   const [clothes, setClothes] = useState([]);
@@ -22,7 +23,6 @@ export default function Dashboard() {
   const [isColorOpen, setIsColorOpen] = useState(false); // Dropdown kolorów
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  // Refy do zamykania przy kliknięciu w tło
   const filterRef = useRef(null);
   const colorRef = useRef(null);
   const sortRef = useRef(null);
@@ -37,6 +37,16 @@ export default function Dashboard() {
     { id: 'newest', label: 'Najnowsze' },
     { id: 'oldest', label: 'Najstarsze' }
   ];
+
+  const FancyCheck = ({ isChecked }) => (
+  <div className={`w-5 h-5 rounded-md border-2 transition-all duration-150 flex items-center justify-center shrink-0 ${
+    isChecked 
+      ? 'bg-blue-600 border-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.3)]' 
+      : 'bg-white border-slate-300 group-hover:border-slate-400'
+  }`}>
+    {isChecked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />}
+  </div>
+);
 
 useEffect(() => {
   const fetchClothes = async () => {
@@ -53,7 +63,6 @@ useEffect(() => {
   fetchClothes();
 }, [refreshTrigger]);
 
-  // Globalny nasłuchiwacz kliknięć poza elementami
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -71,7 +80,6 @@ useEffect(() => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Dynamiczne wyciąganie dostępnych kategorii
   const availableCategories = useMemo(() => {
     const cats = new Set();
     clothes.forEach(item => {
@@ -82,22 +90,18 @@ useEffect(() => {
     return Array.from(cats).sort();
   }, [clothes]);
 
-  // Dynamiczne wyciąganie dostępnych kolorów (z małym zabezpieczeniem, żeby ujednolicić wielkość liter)
   const availableColors = useMemo(() => {
     const colors = new Set();
     clothes.forEach(item => {
       if (item.color) {
-        // Kapitalizujemy pierwszą literę, żeby uniknąć duplikatów typu "zielony" i "Zielony"
         const formattedColor = item.color.charAt(0).toUpperCase() + item.color.slice(1).toLowerCase();
         colors.add(formattedColor);
-        // Nadpisujemy oryginalny kolor w obiekcie dla spójności podczas filtrowania
         item.normalizedColor = formattedColor; 
       }
     });
     return Array.from(colors).sort();
   }, [clothes]);
 
-  // Serce logiki
   const processedClothes = useMemo(() => {
     let result = [...clothes];
 
@@ -181,14 +185,17 @@ useEffect(() => {
                 <div className="max-h-48 overflow-y-auto">
                   {availableCategories.length > 0 ? (
                     availableCategories.map(cat => (
-                      <label key={cat} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                      <label key={cat} className="group flex items-center gap-3 py-1 cursor-pointer">
                         <input 
                           type="checkbox" 
-                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                          checked={selectedCategories.includes(cat)}
-                          onChange={() => toggleCategory(cat)}
+                          className="hidden" // Ukrywamy natywny checkbox
+                          checked={selectedCategories.includes(cat)} 
+                          onChange={() => toggleCategory(cat)} 
                         />
-                        <span className="text-sm text-slate-700">{cat}</span>
+                        <FancyCheck isChecked={selectedCategories.includes(cat)} />
+                        <span className="text-slate-700 text-sm group-hover:text-blue-600 transition-colors">
+                          {cat}
+                        </span>
                       </label>
                     ))
                   ) : (
@@ -213,7 +220,7 @@ useEffect(() => {
                 setIsSortOpen(false);
               }}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
-                selectedColors.length > 0 ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 bg-white'
+                selectedColors.length > 0 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white'
               }`}
             >
               Kolory {selectedColors.length > 0 && `(${selectedColors.length})`}
@@ -226,14 +233,17 @@ useEffect(() => {
                 <div className="max-h-48 overflow-y-auto">
                   {availableColors.length > 0 ? (
                     availableColors.map(color => (
-                      <label key={color} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                      <label key={color} className="group flex items-center gap-3 py-1 cursor-pointer">
                         <input 
                           type="checkbox" 
-                          className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
-                          checked={selectedColors.includes(color)}
-                          onChange={() => toggleColor(color)}
+                          className="hidden" 
+                          checked={selectedColors.includes(color)} 
+                          onChange={() => toggleColor(color)} 
                         />
-                        <span className="text-sm text-slate-700">{color}</span>
+                        <FancyCheck isChecked={selectedColors.includes(color)} />
+                        <span className="text-slate-700 text-sm group-hover:text-blue-600 transition-colors capitalize">
+                          {color}
+                        </span>
                       </label>
                     ))
                   ) : (
@@ -330,8 +340,8 @@ useEffect(() => {
           setSelectedClothingId(null);
         }}
         clothingId={selectedClothingId}
-        onSuccess={() => setRefreshTrigger(prev => prev + 1)} // Odświeżanie po edycji/usunięciu
-        availableCategories={availableCategories} // Lista tagów do trybu edycji
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)}
+        availableCategories={availableCategories} 
       />
     </div>
   );
