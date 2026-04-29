@@ -74,7 +74,9 @@ useEffect(() => {
   const availableCategories = useMemo(() => {
     const cats = new Set();
     clothes.forEach(item => {
-      item.categories?.forEach(c => cats.add(c));
+      item.categories?.forEach(c => {
+        if (c && c.trim() !== '') cats.add(c.trim());
+      });
     });
     return Array.from(cats).sort();
   }, [clothes]);

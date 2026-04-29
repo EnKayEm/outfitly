@@ -87,13 +87,9 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     const formData = new FormData();
     formData.append('description', editData.description);
     formData.append('color', editData.color);
-    
-    if (editData.categories.length > 0) {
-        editData.categories.forEach(cat => formData.append('categories', cat));
-    } else {
-        formData.append('categories', '');
-    }
 
+    editData.categories.forEach(cat => formData.append('categories', cat));
+    
     try {
         await api.put(`clothes/${clothingId}/update/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
