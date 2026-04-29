@@ -59,14 +59,14 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess, available
     setError(null);
     
     const formData = new FormData();
-    formData.append('image', file); // Zmień na właściwą nazwę pola, jeśli backend wymaga innej
+    formData.append('image', file); 
 
     try {
       await api.post('clothes/upload/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      onSuccess(); // Odświeża siatkę w Dashboard
-      onClose(); // Zamyka modal
+      onSuccess();
+      onClose(); 
     } catch (err) {
       setIsAnalyzing(false);
       if (err.response?.status === 400) {
@@ -126,7 +126,7 @@ const toggleCategory = (cat) => {
     if (cleanCat && !manualData.categories.includes(cleanCat)) {
       setManualData(prev => ({...prev, categories: [...prev.categories, cleanCat]}));
     }
-    setCustomCategory(''); // Czyścimy input
+    setCustomCategory('');
   };
 
   return (
