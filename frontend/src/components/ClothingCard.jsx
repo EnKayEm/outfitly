@@ -1,10 +1,14 @@
 export default function ClothingCard({ item, onClick }) {
+  // Wyłapujemy i niszczymy puste stringi [""] z backendu
+  const validCategories = item.categories 
+    ? item.categories.filter(cat => cat && cat.trim() !== '') 
+    : [];
+
   return (
       <div 
-        onClick={() => onClick(item.id)} // Wywołujemy przekazaną funkcję z ID ubrania
+        onClick={() => onClick(item.id)}
         className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200"
       >      
-      {/* Kontener na zdjęcie wymusza proporcje 1:1, żeby grid nie wyglądał jak schody */}
       <div className="aspect-square w-full bg-slate-50 overflow-hidden">
         <img
           src={item.image_url}
@@ -24,15 +28,16 @@ export default function ClothingCard({ item, onClick }) {
           Kolor: {item.color || "Nie podano"}
         </p>
         
-        <div className="mt-3 flex flex-wrap gap-1">
-          {item.categories && item.categories.length > 0 ? (
-            item.categories.map((cat, idx) => (
-              <span key={idx} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+        <div className="flex flex-wrap gap-1 mt-2">
+          {/* Używamy przefiltrowanej tablicy validCategories */}
+          {validCategories.length > 0 ? (
+            validCategories.map((cat, idx) => (
+              <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-100">
                 {cat}
               </span>
             ))
           ) : (
-            <span className="text-xs bg-red-50 text-red-400 px-2 py-1 rounded-full border border-red-100">
+            <span className="px-2 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-medium border border-slate-200">
               Brak kategorii
             </span>
           )}
