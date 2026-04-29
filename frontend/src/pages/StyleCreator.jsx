@@ -155,17 +155,20 @@ export default function StyleCreator() {
           <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-inner">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {outfitClothes.map(item => (
-                <div key={item.id} className="relative group">
-                  <ClothingCard item={item} onClick={() => console.log('Edytuj to ubranie:', item.id)} />
+                <ClothingCard key={item.id} item={item} onClick={() => console.log('Otwieram szczegóły:', item.id)}>
                   
-                  {/* Etap 4 (Zajawka): Przycisk do ręcznej podmiany elementu */}
                   <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); 
+                      console.log('Kliknięto podmianę dla ubrania:', item.id);
+                    }}
                     className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm border border-slate-200 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-blue-600 hover:border-blue-300 transition-all"
                     title="Podmień element"
                   >
                     <PencilRuler className="w-4 h-4" />
                   </button>
-                </div>
+
+                </ClothingCard>
               ))}
             </div>
             
