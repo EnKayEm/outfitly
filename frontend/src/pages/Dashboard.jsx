@@ -4,6 +4,7 @@ import ClothingCard from '../components/ClothingCard';
 import ClothingSkeleton from '../components/ClothingSkeleton';
 import AddClothingModal from '../components/AddClothingModal';
 import ClothingDetailsModal from '../components/ClothingDetailsModal';
+import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter } from 'lucide-react';
 
 export default function Dashboard() {
   const [clothes, setClothes] = useState([]);
@@ -141,17 +142,22 @@ useEffect(() => {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-slate-800">Twoja Szafa 👗</h1>
+        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          Twoja Szafa <Shirt className="text-blue-600 w-6 h-6" />
+        </h1>
         
         <div className="flex flex-wrap w-full lg:w-auto gap-3">
-          {/* Szukajka */}
-          <input
-            type="text"
-            placeholder="Szukaj po nazwie..."
-            className="flex-1 min-w-[150px] px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          {/* Szukajka z ikoną */}
+          <div className="relative flex-1 min-w-[150px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Szukaj po nazwie..."
+              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
 
           {/* DROPDOWN KATEGORII */}
           <div className="relative" ref={filterRef}>
@@ -286,7 +292,7 @@ useEffect(() => {
             onClick={() => setIsAddModalOpen(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
-            <span className="text-xl">+</span> Dodaj Ubranie
+            <Plus className="w-5 h-5" /> Dodaj Ubranie
           </button>
         </div>
       </div>
