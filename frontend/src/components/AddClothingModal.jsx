@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
 
-//TODO: Podcza gdy AI analuje zdjęcię, dodać przechodzący od góry do dołu niebieski pasek stanu, pokazująć "Gemini analizuje materiał..." i animację ładowania (np. kręcący się kółko)
 //Poprawić dane wprowadzane ręcznie 
 //Zwiększyć miejsce w pojednyczym ubraniu, by wyświetlało się węcei tekstu, (więcej miesca na początku)
+//Zmniejszyć szerokość panelu od sortowania
 
 export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
   const [file, setFile] = useState(null);
@@ -140,10 +140,26 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess }) {
                 
                 {/* Animacja skanowania AI */}
                 {isAnalyzing && !isManualMode && (
-                  <div className="absolute inset-0 bg-blue-900/20 flex flex-col items-center justify-center backdrop-blur-sm">
-                    <div className="w-full h-1 bg-blue-500 absolute top-0 animate-[scan_2s_ease-in-out_infinite] shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
-                    <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-white font-bold mt-4 drop-shadow-md">Gemini analizuje materiał...</p>
+                  <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center overflow-hidden z-10">
+                    {/* Holograficzna siatka w tle */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.2)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+
+                    {/* Skanująca linia z gradientowym cieniem */}
+                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-transparent to-blue-500/30 animate-[scan_2s_ease-in-out_infinite] border-b-2 border-blue-400 shadow-[0_5px_15px_rgba(59,130,246,0.6)]"></div>
+
+                    {/* Cyber-celownik */}
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                      <div className="absolute inset-0 border border-blue-500/50 rounded-full animate-ping opacity-20"></div>
+                      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-400"></div>
+                      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-400"></div>
+                      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-400"></div>
+                      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-400"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]"></div>
+                    </div>
+
+                    <p className="text-blue-400 font-mono text-xs tracking-widest mt-6 drop-shadow-md relative z-10 animate-pulse uppercase">
+                      Analiza obrazu...
+                    </p>
                   </div>
                 )}
 

@@ -11,7 +11,10 @@ export default function ClothingCard({ item }) {
       </div>
       
       <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-semibold text-slate-800 text-lg truncate" title={item.description}>
+        <h3 
+          className="font-semibold text-slate-800 text-sm sm:text-base leading-snug line-clamp-2 min-h-[2.5rem]" 
+          title={item.description}
+        >
           {item.description || "Brak opisu"}
         </h3>
         <p className="text-sm text-slate-500 mt-1">

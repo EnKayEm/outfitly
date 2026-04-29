@@ -29,8 +29,8 @@ export default function Dashboard() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const sortOptions = [
-    { id: 'newest', label: 'Najnowsze dodane' },
-    { id: 'oldest', label: 'Najstarsze dodane' }
+    { id: 'newest', label: 'Najnowsze' },
+    { id: 'oldest', label: 'Najstarsze' }
   ];
 
 useEffect(() => {
@@ -245,10 +245,13 @@ useEffect(() => {
                 setIsFilterOpen(false);
                 setIsColorOpen(false);
               }}
-              className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center gap-2 transition-colors h-full min-w-[170px] justify-between"
+              className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center justify-between gap-2 transition-colors h-full hover:bg-slate-50 min-w-[190px]"
             >
-              <span className="truncate">{activeSortLabel}</span>
-              <span className={`text-[10px] transition-transform ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
+              <span className="font-medium text-slate-800 truncate">
+                <span className="text-slate-500 font-normal mr-1">Sortuj:</span> 
+                {activeSortLabel}
+              </span>
+              <span className={`text-[10px] text-slate-400 transition-transform ml-1 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
             {isSortOpen && (

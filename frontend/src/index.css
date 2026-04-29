@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @keyframes scan {
-  0% { top: 0%; }
-  50% { top: 100%; }
-  100% { top: 0%; }
+  0% { top: -50%; }
+  50% { top: 50%; }
+  100% { top: -50%; }
 }
