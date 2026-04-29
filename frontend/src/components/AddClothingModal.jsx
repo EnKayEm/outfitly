@@ -89,7 +89,11 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess, available
   formData.append('description', manualData.description);
   formData.append('color', manualData.color);
   
-  manualData.categories.forEach(cat => formData.append('categories', cat));
+  if (manualData.categories.length > 0) {
+    manualData.categories.forEach(cat => formData.append('categories', cat));
+  } else {
+    formData.append('categories', '');
+  }
 
   try {
     await api.post('clothes/manual/', formData, {

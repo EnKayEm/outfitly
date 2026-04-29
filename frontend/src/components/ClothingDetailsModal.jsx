@@ -16,36 +16,42 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen || !clothingId) return;
+    useEffect(() => {
+        if (!isOpen || !clothingId) return;
 
-    const fetchClothingDetails = async () => {
-    setIsLoading(true);
-    setError(null);
-    setIsEditing(false);
-    setIsDeleteConfirmOpen(false);
-    // DODAJ TE DWIE LINIJKI:
-    setIsDeleting(false); 
-    setIsSaving(false);
-    
-    try {
-        const response = await api.get(`clothes/${clothingId}/`);
-        setClothing(response.data);
-      } catch (err) {
-        setError('Nie udało się pobrać szczegółów ubrania.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        const fetchClothingDetails = async () => {
+        setIsLoading(true);
+        setError(null);
+        setIsEditing(false);
+        setIsDeleteConfirmOpen(false);
+        setIsDeleting(false); 
+        setIsSaving(false);
+        
+        try {
+            const response = await api.get(`clothes/${clothingId}/`);
+            const data = response.data;
+            
+            // Magiczne sprzątanie śmieci z backendu: wyrzucamy puste tagi
+            if (data.categories) {
+            data.categories = data.categories.filter(c => c && c.trim() !== '');
+            }
+            
+            setClothing(data);
+        } catch (err) {
+            setError('Nie udało się pobrać szczegółów ubrania.');
+        } finally {
+            setIsLoading(false);
+        }
+        };
 
-    fetchClothingDetails();
+        fetchClothingDetails();
 
-    return () => {
-      setClothing(null);
-      setIsEditing(false);
-      setIsDeleteConfirmOpen(false);
-    };
-  }, [isOpen, clothingId]);
+        return () => {
+        setClothing(null);
+        setIsEditing(false);
+        setIsDeleteConfirmOpen(false);
+        };
+    }, [isOpen, clothingId]);
 
   // Aktywacja trybu edycji
   const handleEditClick = () => {
@@ -87,22 +93,31 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     const formData = new FormData();
     formData.append('description', editData.description);
     formData.append('color', editData.color);
-
-    editData.categories.forEach(cat => formData.append('categories', cat));
     
-    try {
-        await api.put(`clothes/${clothingId}/update/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        setClothing({ ...clothing, ...editData });
-        setIsEditing(false);
-        onSuccess(); 
-    } catch (err) {
-        setError('Błąd podczas zapisywania zmian.');
-    } finally {
-        setIsSaving(false);
+    // Wymuszamy nadpisanie kategorii na backendzie
+    if (editData.categories.length > 0) {
+      editData.categories.forEach(cat => formData.append('categories', cat));
+    } else {
+      formData.append('categories', ''); 
     }
-    };
+
+    try {
+      await api.put(`clothes/${clothingId}/update/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // Lokalnie udajemy, że mamy czystą, pustą tablicę (bez widmowego tagu)
+      const cleanCategories = editData.categories.filter(c => c && c.trim() !== '');
+      setClothing({ ...clothing, ...editData, categories: cleanCategories });
+      
+      setIsEditing(false);
+      onSuccess(); 
+    } catch (err) {
+      setError('Błąd podczas zapisywania zmian.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Wywołanie DELETE /clothes/<id>/
   const handleDelete = async () => {
