@@ -139,10 +139,11 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      {/* Wymuszenie stałej wysokości na desktopie i zablokowanie głównego scrolla */}
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] md:h-[650px] overflow-hidden">
         
-        {/* Nagłówek */}
-        <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-white">
+        {/* Nagłówek (zamrożony na górze) */}
+        <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-white shrink-0">
           <h2 className="text-xl font-bold text-slate-800">
             {isEditing ? 'Edycja ubrania' : 'Szczegóły ubrania'}
           </h2>
@@ -155,163 +156,171 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
           </button>
         </div>
 
-        {/* Ciało Modala */}
-        <div className="p-6 overflow-y-auto flex-1">
-          {isLoading ? (
-            <div className="animate-pulse flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-1/2 aspect-square bg-slate-200 rounded-2xl"></div>
-              <div className="w-full md:w-1/2 space-y-4">
-                <div className="h-6 bg-slate-200 rounded-md w-3/4"></div>
-                <div className="h-4 bg-slate-200 rounded-md w-1/4"></div>
-                <div className="h-8 bg-slate-200 rounded-md w-1/2 mt-4"></div>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">{error}</div>
-          ) : clothing ? (
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Zdjęcie (nieedytowalne) */}
-              <div className="w-full md:w-1/2">
-                <div className="aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 relative">
-                  {clothing.image_url ? (
-                    <img src={clothing.image_url} alt="Ubranie" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">👕</div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Informacje lub Formularz */}
-              <div className="w-full md:w-1/2 flex flex-col gap-4">
-                {!isEditing ? (
-                  // TRYB ODCZYTU
-                  <>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><AlignLeft className="w-3 h-3" /> Opis</p>
-                      <h3 className="text-xl font-semibold text-slate-800">{clothing.description || 'Brak opisu'}</h3>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Palette className="w-3 h-3" /> Kolor</p>
-                      <p className="text-slate-700 font-medium capitalize">{clothing.color || 'Brak koloru'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Tags className="w-3 h-3" /> Kategorie</p>
-                      <div className="flex flex-wrap gap-2">
-                        {clothing.categories && clothing.categories.length > 0 ? (
-                          clothing.categories.map((cat, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
-                              {cat}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-sm text-slate-400 italic">Brak przypisanych kategorii</span>
-                        )}
-                      </div>
-                    </div>
-                  </>
+        {/* Główny kontener podzielony na dwie kolumny (Scroll na mobile, brak scrolla globalnego na desktopie) */}
+        <div className="p-6 flex flex-col md:flex-row gap-8 h-full overflow-y-auto md:overflow-hidden">
+          
+          {/* LEWA STRONA: Zdjęcie (Zamrożona) */}
+          <div className="w-full md:w-1/2 flex-shrink-0 md:h-full flex flex-col">
+            {isLoading ? (
+              <div className="w-full h-full min-h-[300px] bg-slate-200 rounded-2xl animate-pulse"></div>
+            ) : error ? (
+              <div className="w-full h-full min-h-[300px] flex items-center justify-center bg-red-50 text-red-600 rounded-2xl border border-red-100">Błąd ładowania obrazu</div>
+            ) : clothing ? (
+              <div className="relative w-full h-full min-h-[300px] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-inner">
+                {clothing.image_url ? (
+                  <img src={clothing.image_url} alt="Ubranie" className="w-full h-full object-contain p-2" />
                 ) : (
-                  // TRYB EDYCJI
-                  <form className="flex flex-col gap-3 h-full">
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Opis</label>
-                      <input 
-                        type="text" 
-                        value={editData.description} 
-                        onChange={e => setEditData({...editData, description: e.target.value})}
-                        className="w-full p-2 border border-slate-200 rounded-lg focus:ring-2 outline-none text-sm"
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Kolor</label>
-                      <input 
-                        type="text" 
-                        value={editData.color} 
-                        onChange={e => setEditData({...editData, color: e.target.value})}
-                        className="w-full p-2 border border-slate-200 rounded-lg focus:ring-2 outline-none text-sm"
-                        disabled={isSaving}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Kategorie</label>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {availableCategories.map(cat => (
-                          <button
-                            key={cat}
-                            type="button"
-                            onClick={() => toggleCategory(cat)}
-                            disabled={isSaving}
-                            className={`px-2 py-1 rounded-full text-xs font-medium border transition-colors ${
-                              editData.categories.includes(cat) ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-600'
-                            }`}
-                          >
-                            {cat} {editData.categories.includes(cat) ? '✕' : '+'}
-                          </button>
-                        ))}
-                        {editData.categories.filter(c => !availableCategories.includes(c)).map(cat => (
-                          <span key={cat} className="px-2 py-1 rounded-full text-xs font-medium border bg-blue-100 border-blue-300 text-blue-700 flex items-center gap-1">
-                            {cat} <button type="button" onClick={() => toggleCategory(cat)} disabled={isSaving} className="hover:text-blue-900 font-bold">✕</button>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <input 
-                          type="text" 
-                          placeholder="Nowa kategoria..." 
-                          className="flex-1 p-2 border rounded-lg focus:ring-2 outline-none border-slate-200 text-sm" 
-                          value={customCategory} 
-                          onChange={e => setCustomCategory(e.target.value)} 
-                          onKeyDown={e => e.key === 'Enter' && handleAddCustomCategory(e)}
-                          disabled={isSaving}
-                        />
-                        <button type="button" onClick={handleAddCustomCategory} disabled={isSaving || !customCategory.trim()} className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-lg text-sm hover:bg-slate-200">
-                          Dodaj
-                        </button>
-                      </div>
-                    </div>
-                  </form>
+                  <div className="w-full h-full flex items-center justify-center text-6xl">👕</div>
                 )}
               </div>
-            </div>
-          ) : null}
-        </div>
-
-        {/* Stopka z akcjami (Widoczna tylko, gdy załadowano dane) */}
-        {!isLoading && !error && clothing && (
-          <div className="p-4 border-t border-slate-100 bg-slate-50">
-            {isDeleteConfirmOpen ? (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-red-50 p-3 rounded-lg border border-red-100 animate-in fade-in">
-                <span className="text-red-700 font-medium text-sm">Czy na pewno chcesz usunąć to ubranie?</span>
-                <div className="flex gap-2 w-full sm:w-auto">
-                <button onClick={() => setIsDeleteConfirmOpen(false)} disabled={isDeleting} className="flex-1 px-4 h-10 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap flex items-center justify-center transition-colors">
-                    Anuluj
-                </button>
-                <button onClick={handleDelete} disabled={isDeleting} className="flex-1 px-4 h-10 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm whitespace-nowrap flex items-center justify-center transition-colors">
-                    {isDeleting ? 'Usuwanie...' : 'Tak, usuń'}
-                </button>
-                </div>
-            </div>
-            ) : isEditing ? (
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setIsEditing(false)} disabled={isSaving} className="px-5 py-2 text-slate-500 hover:bg-slate-200 rounded-lg font-medium transition-colors">
-                  Anuluj
-                </button>
-                <button onClick={handleSave} disabled={isSaving} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
-                  <Save className="w-4 h-4" /> {isSaving ? 'Zapisywanie...' : 'Zapisz zmiany'}
-                </button>
-              </div>
-            ) : (
-              <div className="flex justify-between items-center">
-                <button onClick={() => setIsDeleteConfirmOpen(true)} className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-medium transition-colors text-sm flex items-center gap-2">
-                  <Trash2 className="w-4 h-4" /> Usuń ubranie
-                </button>
-                <button onClick={handleEditClick} className="px-6 py-2 bg-slate-800 text-white rounded-lg font-medium hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-2">
-                  <Pencil className="w-4 h-4" /> Edytuj
-                </button>
-              </div>
-            )}
+            ) : null}
           </div>
-        )}
+          
+          {/* PRAWA STRONA: Informacje/Formularz (Przewijana) */}
+          <div className="w-full md:w-1/2 flex flex-col md:h-full md:overflow-y-auto pr-1 px-1">
+             {isLoading ? (
+                <div className="space-y-6 animate-pulse">
+                  <div className="h-4 bg-slate-200 rounded-md w-1/4"></div>
+                  <div className="h-8 bg-slate-200 rounded-md w-3/4"></div>
+                  <div className="h-4 bg-slate-200 rounded-md w-1/4 mt-4"></div>
+                  <div className="h-6 bg-slate-200 rounded-md w-1/2"></div>
+                </div>
+              ) : error ? (
+                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">{error}</div>
+              ) : clothing ? (
+                <div className="flex flex-col h-full">
+                  
+                  {/* Sekcja Danych */}
+                  <div className="flex-1">
+                    {!isEditing ? (
+                      // TRYB ODCZYTU
+                      <div className="flex flex-col gap-6">
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><AlignLeft className="w-3 h-3" /> Opis</p>
+                          <h3 className="text-xl font-semibold text-slate-800 leading-relaxed">{clothing.description || 'Brak opisu'}</h3>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Palette className="w-3 h-3" /> Kolor</p>
+                          <p className="text-slate-700 font-medium capitalize text-lg">{clothing.color || 'Brak koloru'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Tags className="w-3 h-3" /> Kategorie</p>
+                          <div className="flex flex-wrap gap-2">
+                            {clothing.categories && clothing.categories.length > 0 ? (
+                              clothing.categories.map((cat, idx) => (
+                                <span key={idx} className="px-4 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-100 shadow-sm">
+                                  {cat}
+                               </span>
+                              ))
+                            ) : (
+                              <span className="text-sm text-slate-400 italic">Brak przypisanych kategorii</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // TRYB EDYCJI
+                      <form className="flex flex-col gap-5">
+                        <div>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Opis</label>
+                          <textarea 
+                            rows="4"
+                            value={editData.description} 
+                            onChange={e => setEditData({...editData, description: e.target.value})}
+                            className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none shadow-sm transition-shadow"
+                            disabled={isSaving}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kolor</label>
+                          <input 
+                            type="text" 
+                            value={editData.color} 
+                            onChange={e => setEditData({...editData, color: e.target.value})}
+                            className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm transition-shadow"
+                            disabled={isSaving}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kategorie</label>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {availableCategories.map(cat => (
+                              <button
+                                key={cat}
+                                type="button"
+                                onClick={() => toggleCategory(cat)}
+                                disabled={isSaving}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors shadow-sm ${
+                                  editData.categories.includes(cat) ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                }`}
+                              >
+                                {cat} {editData.categories.includes(cat) ? '✕' : '+'}
+                              </button>
+                            ))}
+                            {editData.categories.filter(c => !availableCategories.includes(c)).map(cat => (
+                              <span key={cat} className="px-3 py-1.5 rounded-lg text-xs font-medium border bg-blue-50 border-blue-300 text-blue-700 flex items-center gap-1 shadow-sm">
+                                {cat} <button type="button" onClick={() => toggleCategory(cat)} disabled={isSaving} className="hover:text-blue-900 font-bold ml-1">✕</button>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              placeholder="Dodaj własny tag..." 
+                              className="flex-1 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none border-slate-200 text-sm shadow-sm transition-shadow" 
+                              value={customCategory} 
+                              onChange={e => setCustomCategory(e.target.value)} 
+                              onKeyDown={e => e.key === 'Enter' && handleAddCustomCategory(e)}
+                              disabled={isSaving}
+                            />
+                            <button type="button" onClick={handleAddCustomCategory} disabled={isSaving || !customCategory.trim()} className="px-4 py-2.5 bg-slate-100 border border-slate-200 text-slate-700 font-semibold rounded-xl text-sm hover:bg-slate-200 disabled:opacity-50 transition-colors">
+                              Dodaj
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+
+                  {/* Stopka z akcjami - wewnątrz prawej kolumny, wypchnięta na sam dół (mt-auto) */}
+                  <div className="mt-auto pt-6 border-t border-slate-100 shrink-0">
+                    {isDeleteConfirmOpen ? (
+                      <div className="flex flex-col xl:flex-row items-center justify-between gap-3 bg-red-50 p-4 rounded-xl border border-red-100 animate-in fade-in">
+                        <span className="text-red-700 font-medium text-sm text-center xl:text-left">Usunąć ubranie na zawsze?</span>
+                        <div className="flex gap-2 w-full xl:w-auto">
+                          <button onClick={() => setIsDeleteConfirmOpen(false)} disabled={isDeleting} className="flex-1 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 text-sm font-medium transition-colors">
+                            Anuluj
+                          </button>
+                          <button onClick={handleDelete} disabled={isDeleting} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors">
+                            {isDeleting ? 'Usuwanie...' : 'Usuń'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : isEditing ? (
+                      <div className="flex justify-end gap-3 w-full">
+                        <button onClick={() => setIsEditing(false)} disabled={isSaving} className="flex-1 sm:flex-none px-5 py-2.5 text-slate-500 bg-slate-100 hover:bg-slate-200 border border-transparent rounded-xl font-medium transition-colors text-sm">
+                          Anuluj
+                        </button>
+                        <button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-none px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 text-sm">
+                          <Save className="w-4 h-4" /> {isSaving ? 'Zapisywanie...' : 'Zapisz zmiany'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <button onClick={() => setIsDeleteConfirmOpen(true)} className="w-full sm:w-auto px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl font-medium transition-colors text-sm flex items-center justify-center gap-2 border border-transparent hover:border-red-100">
+                          <Trash2 className="w-4 h-4" /> Usuń ubranie
+                        </button>
+                        <button onClick={handleEditClick} className="w-full sm:w-auto px-8 py-2.5 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-colors shadow-md flex items-center justify-center gap-2 text-sm">
+                          <Pencil className="w-4 h-4" /> Edytuj dane
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                </div>
+              ) : null}
+          </div>
+        </div>
 
       </div>
     </div>
