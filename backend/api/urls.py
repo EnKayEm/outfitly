@@ -8,7 +8,10 @@ urlpatterns = [
     path('auth/logout/', views.logout_user, name='logout'),
 
     path('clothes/upload/', views.upload_and_analyze_cloth, name='upload_cloth'),
+    path('clothes/upload/confirm/', views.finalize_upload, name='finalize_upload'),
+
     path('clothes/suggest/', views.suggest_outfit, name='suggest_outfit'),
+    path('clothes/suggest/confirm/', views.confirm_outfit, name='confirm_outfit'),
 
     path('clothes/', views.get_user_clothes, name='get_clothes'),
     path('clothes/<int:pk>/', views.cloth_detail_or_delete, name='cloth_detail_delete'),
