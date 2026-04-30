@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import axios from 'axios';
-import { Wand2, Sparkles, X, RotateCw, PencilRuler, Trash2, Save } from 'lucide-react';
+import { Wand2, Sparkles, X, RotateCw, PencilRuler, Trash2, Save, Plus } from 'lucide-react';
 import ClothingCard from '../components/ClothingCard';
 import SwapClothingModal from '../components/SwapClothingModal'; 
 
@@ -17,6 +17,7 @@ export default function StyleCreator() {
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
   const [itemToSwap, setItemToSwap] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const abortControllerRef = useRef(null);
   const popularOccasions = ['Wesele', 'Praca w biurze', 'Randka', 'Spacer', 'Wyjście ze znajomymi'];
@@ -68,27 +69,40 @@ export default function StyleCreator() {
 
   const handleExecuteSwap = (newItemId) => {
     setGeneratedData(prevData => {
-      // Mapujemy tablicę IDków: jeśli ID zgadza się z tym, które wymieniamy, wstawiamy nowe ID
-      const newOutfitIds = prevData.suggested_outfit_ids.map(id => 
-        id === itemToSwap ? newItemId : id
-      );
-      
+      const safeIds = Array.isArray(prevData?.suggested_outfit_ids) ? prevData.suggested_outfit_ids : [];
       return {
         ...prevData,
-        suggested_outfit_ids: newOutfitIds
+        suggested_outfit_ids: safeIds.map(id => String(id) === String(itemToSwap) ? newItemId : id)
       };
     });
     
-    // Zamykamy modal i czyścimy stan
     setIsSwapModalOpen(false);
     setItemToSwap(null);
   };
 
+  const handleExecuteAdd = (newItemId) => {
+    setGeneratedData(prevData => {
+      const safeIds = Array.isArray(prevData?.suggested_outfit_ids) ? prevData.suggested_outfit_ids : [];
+      
+      if (safeIds.some(id => String(id) === String(newItemId))) return prevData;
+      
+      return {
+        ...prevData,
+        suggested_outfit_ids: [...safeIds, newItemId]
+      };
+    });
+    
+    setIsAddModalOpen(false);
+  };
+
   const handleRemoveItem = (itemIdToRemove) => {
-    setGeneratedData(prevData => ({
-      ...prevData,
-      suggested_outfit_ids: prevData.suggested_outfit_ids.filter(id => id !== itemIdToRemove)
-    }));
+    setGeneratedData(prevData => {
+      const safeIds = Array.isArray(prevData?.suggested_outfit_ids) ? prevData.suggested_outfit_ids : [];
+      return {
+        ...prevData,
+        suggested_outfit_ids: safeIds.filter(id => String(id) !== String(itemIdToRemove))
+      };
+    });
   };
 
   const handleSaveOutfit = async () => {
@@ -146,13 +160,13 @@ export default function StyleCreator() {
     );
   }
 
-  // WIDOK REZULTATU
+// WIDOK REZULTATU
   if (generatedData) {
     const outfitIds = Array.isArray(generatedData.suggested_outfit_ids) 
       ? generatedData.suggested_outfit_ids 
       : [];
       
-    const outfitClothes = clothes.filter(c => outfitIds.includes(c.id));
+    const outfitClothes = clothes.filter(c => c?.id && outfitIds.some(id => String(id) === String(c.id)));
 
     return (
       <div className="max-w-5xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
@@ -197,12 +211,19 @@ export default function StyleCreator() {
         </div>
 
         {outfitClothes.length === 0 ? (
-          <div className="bg-orange-50 text-orange-700 p-6 rounded-2xl border border-orange-200 text-center">
-            Ten zestaw jest pusty. Wygeneruj nową propozycję!
+          <div className="bg-orange-50 p-8 rounded-3xl border border-orange-200 flex flex-col items-center justify-center gap-4 text-center">
+            <p className="text-orange-700 font-medium">Ten zestaw jest pusty. Możesz wygenerować nową propozycję lub zacząć dodawać ubrania ręcznie.</p>
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-md flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" /> Dodaj pierwszy element
+            </button>
           </div>
         ) : (
           <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-inner">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              
               {outfitClothes.map(item => (
                 <ClothingCard key={item.id} item={item} onClick={() => console.log('Kliknięto podgląd ubrania')}>
                   
@@ -214,13 +235,11 @@ export default function StyleCreator() {
                     className="group/btn-rm absolute top-3 left-3 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm border border-slate-200 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:border-red-300 transition-all z-10"
                   >
                     <Trash2 className="w-4 h-4" />
-                    
                     <span className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover/btn-rm:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:right-full after:border-4 after:border-transparent after:border-r-slate-800">
                       Usuń z zestawu
                     </span>
                   </button>
 
-                  {/* PRZYCISK EDYCJI */}
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -236,24 +255,44 @@ export default function StyleCreator() {
 
                 </ClothingCard>
               ))}
+
+              <div 
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-3xl p-6 cursor-pointer hover:bg-slate-50 hover:border-purple-400 transition-all min-h-[250px] group"
+              >
+                <div className="w-16 h-16 bg-slate-100 group-hover:bg-purple-100 rounded-full flex items-center justify-center mb-4 transition-colors">
+                  <Plus className="w-8 h-8 text-slate-400 group-hover:text-purple-600" />
+                </div>
+                <span className="font-medium text-slate-500 group-hover:text-purple-700">Dodaj element</span>
+              </div>
+
             </div>
             
             <div className="mt-8 text-center">
               <p className="text-sm font-medium text-purple-600 bg-purple-50 inline-block px-4 py-2 rounded-full border border-purple-100">
                 {generatedData.message || "Ten zestaw świetnie sprawdzi się na Twoje wyjście!"}
               </p>
-            </div>
-          </div>
+            </div>   
+          </div> 
         )}
-
-        {/* MODAL DO PODMIANY UBRAŃ */}
+        
         <SwapClothingModal 
           isOpen={isSwapModalOpen}
           onClose={() => setIsSwapModalOpen(false)}
           clothes={clothes}
-          currentOutfitIds={generatedData.suggested_outfit_ids}
+          currentOutfitIds={outfitIds} 
           onSwap={handleExecuteSwap}
+          mode="swap"
         />
+
+        <SwapClothingModal 
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          clothes={clothes}
+          currentOutfitIds={outfitIds}
+          onSwap={handleExecuteAdd}
+          mode="add"
+        /> 
 
       </div>
     );

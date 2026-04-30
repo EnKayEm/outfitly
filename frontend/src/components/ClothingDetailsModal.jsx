@@ -32,7 +32,6 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             const response = await api.get(`clothes/${clothingId}/`);
             const data = response.data;
             
-            // Magiczne sprzątanie śmieci z backendu: wyrzucamy puste tagi
             if (data.categories) {
             data.categories = data.categories.filter(c => c && c.trim() !== '');
             }
@@ -107,7 +106,6 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      // Lokalnie udajemy, że mamy czystą, pustą tablicę (bez widmowego tagu)
       const cleanCategories = editData.categories.filter(c => c && c.trim() !== '');
       setClothing({ ...clothing, ...editData, categories: cleanCategories });
       
@@ -126,8 +124,8 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     setError(null);
     try {
       await api.delete(`clothes/${clothingId}/`);
-      onSuccess(); // Odświeża siatkę w Dashboardzie
-      onClose(); // Zamykamy modal, bo ubrania już nie ma
+      onSuccess(); 
+      onClose();
     } catch (err) {
       setError('Błąd podczas usuwania ubrania.');
       setIsDeleting(false);
@@ -139,7 +137,6 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      {/* Wymuszenie stałej wysokości na desktopie i zablokowanie głównego scrolla */}
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] md:h-[650px] overflow-hidden">
         
         {/* Nagłówek (zamrożony na górze) */}
@@ -156,10 +153,10 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
           </button>
         </div>
 
-        {/* Główny kontener podzielony na dwie kolumny (Scroll na mobile, brak scrolla globalnego na desktopie) */}
+        {/* Główny kontener podzielony na dwie kolumny */}
         <div className="p-6 flex flex-col md:flex-row gap-8 h-full overflow-y-auto md:overflow-hidden">
           
-          {/* LEWA STRONA: Zdjęcie (Zamrożona) */}
+          {/* LEWA STRONA */}
           <div className="w-full md:w-1/2 flex-shrink-0 md:h-full flex flex-col">
             {isLoading ? (
               <div className="w-full h-full min-h-[300px] bg-slate-200 rounded-2xl animate-pulse"></div>
@@ -176,7 +173,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             ) : null}
           </div>
           
-          {/* PRAWA STRONA: Informacje/Formularz (Przewijana) */}
+          {/* PRAWA STRONA: Informacje/Formularz */}
           <div className="w-full md:w-1/2 flex flex-col md:h-full md:overflow-y-auto pr-1 px-1">
              {isLoading ? (
                 <div className="space-y-6 animate-pulse">
