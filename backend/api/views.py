@@ -20,7 +20,7 @@ def logout_user(request):
     except Exception:
         return Response({"error": "Błędny token lub już wygasł."}, status=status.HTTP_400_BAD_REQUEST)
 
-# Endpoint do uploadu zdjęcia ubrania i jego analizy przez AI - POST /api/clothes/upload/
+# Endpoint do przesyłania zdjęcia ubrania i otrzymywania analizy AI - POST /api/clothes/upload/
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_and_analyze_cloth(request):
@@ -28,15 +28,9 @@ def upload_and_analyze_cloth(request):
         return Response({'error': 'Brak zdjęcia w zapytaniu.'}, status=status.HTTP_400_BAD_REQUEST)
 
     image_file = request.FILES['image']
-    
     user = request.user
-    if not user:
-        return Response({'error': 'Musisz najpierw stworzyć użytkownika w bazie (np. przez panel admina).'}, status=status.HTTP_400_BAD_REQUEST)
 
-    cloth = Cloth.objects.create(user=user)
-    cloth.image = image_file
-    cloth.save()
-
+    cloth = Cloth.objects.create(user=user, image=image_file)
     ai_data = analyze_cloth_image(cloth.image.path)
 
     if ai_data.get('error') == 'not_clothing':
@@ -52,11 +46,9 @@ def upload_and_analyze_cloth(request):
     cloth.save()
 
     categories = ai_data.get('categories', [])
-
     if 'category' in ai_data:
         if isinstance(ai_data['category'], list):
             categories.extend(ai_data['category'])
-
         elif isinstance(ai_data['category'], str):
             categories.append(ai_data['category'])
 
@@ -67,10 +59,40 @@ def upload_and_analyze_cloth(request):
         category_obj.clothes.add(cloth)
 
     return Response({
-        'message': 'Ubranie dodane i z sukcesem przeanalizowane przez AI!',
-        'cloth_id': cloth.id,
-        'ai_analysis': ai_data
-    }, status=status.HTTP_201_CREATED)
+        'temp_id': cloth.id,
+        'image_url': request.build_absolute_uri(cloth.image.url),
+        'ai_proposal': {
+            'color': cloth.color,
+            'description': cloth.description,
+            'categories': categories
+        },
+        'message': 'AI przeanalizowało ubranie. Możesz teraz potwierdzić lub edytować dane.'
+    }, status=status.HTTP_200_OK)
+
+# Endpoint do potwierdzania lub edytowania danych ubrania po analizie AI - POST /api/clothes/upload/confirm/
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def finalize_upload(request):
+    cloth_id = request.data.get('temp_id')
+    color = request.data.get('color')
+    description = request.data.get('description')
+    categories_list = request.data.get('categories', [])
+
+    try:
+        cloth = Cloth.objects.get(id=cloth_id, user=request.user)
+        
+        cloth.color = color
+        cloth.description = description
+        cloth.save()
+
+        cloth.category_set.clear()
+        for cat_name in categories_list:
+            category_obj, _ = Category.objects.get_or_create(name=cat_name)
+            category_obj.clothes.add(cloth)
+
+        return Response({'message': 'Ubranie dodane pomyślnie!', 'id': cloth.id}, status=status.HTTP_201_CREATED)
+    except Cloth.DoesNotExist:
+        return Response({'error': 'Nie znaleziono ubrania.'}, status=status.HTTP_404_NOT_FOUND)
 
 # Sugestia stylizacji na podstawie szafy i okazji - POST /api/clothes/suggest/
 @api_view(['POST'])
@@ -102,21 +124,33 @@ def suggest_outfit(request):
     if not ai_data or 'outfit_ids' not in ai_data:
         return Response({'error': 'AI nie było w stanie wygenerować stylizacji.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    outfit_ids = ai_data['outfit_ids']
-
-    if outfit_ids:
-        composition = Composition.objects.create(
-            user=request.user,
-            target_event=occasion
-        )
-        composition.clothes.set(outfit_ids)
-
     return Response({
         'occasion': occasion,
-        'suggested_outfit_ids': outfit_ids,
-        'composition_id': composition.id if outfit_ids else None,
-        'message': 'Stylizacja została wygenerowana i zapisana w Twojej kolekcji!'
+        'suggested_outfit_ids': ai_data['outfit_ids'],
+        'justification': ai_data.get('justification', ''),
+        'message': 'Oto propozycja AI. Czy chcesz ją zapisać w swojej kolekcji?'
     }, status=status.HTTP_200_OK)
+
+# Endpoint do potwierdzania i zapisywania zaproponowanej stylizacji - POST /api/clothes/suggest/confirm/
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def confirm_outfit(request):
+    outfit_ids = request.data.get('outfit_ids')
+    occasion = request.data.get('occasion', 'Stylizacja')
+
+    if not outfit_ids:
+        return Response({'error': 'Brak ID ubrań do zapisania.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    composition = Composition.objects.create(
+        user=request.user,
+        target_event=occasion
+    )
+    composition.clothes.set(outfit_ids)
+
+    return Response({
+        'id': composition.id,
+        'message': 'Stylizacja została pomyślnie zapisana!'
+    }, status=status.HTTP_201_CREATED)
 
 # Pobieranie wszystkich ubrań użytkownika - GET /api/clothes/
 @api_view(['GET'])
