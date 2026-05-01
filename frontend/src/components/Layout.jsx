@@ -21,7 +21,6 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Przyklejony nagłówek z efektem szkła  */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
           

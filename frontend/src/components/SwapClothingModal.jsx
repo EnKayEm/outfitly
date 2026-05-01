@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
-import { X, ArrowLeftRight, SearchX, Search, Filter, Palette, Check } from 'lucide-react';
+import { X, ArrowLeftRight, SearchX, Search, Filter, Palette, Check, PlusCircle } from 'lucide-react';
 import ClothingCard from './ClothingCard';
 
-export default function SwapClothingModal({ isOpen, onClose, clothes, currentOutfitIds, onSwap }) {
+  const FancyCheckPurple = ({ isChecked }) => (
+    <div className={`w-5 h-5 rounded-md border-2 transition-all duration-150 flex items-center justify-center shrink-0 ${
+      isChecked 
+        ? 'bg-purple-600 border-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.3)]' 
+        : 'bg-white border-slate-300 group-hover:border-slate-400'
+    }`}>
+      {isChecked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />}
+    </div>
+  );
+
+export default function SwapClothingModal({ isOpen, onClose, clothes, currentOutfitIds, onSwap, mode = 'swap' }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
@@ -21,7 +31,7 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
 
   if (!isOpen) return null;
 
-  const availableClothes = clothes.filter(c => !currentOutfitIds.includes(c.id));
+  const availableClothes = clothes.filter(c => c?.id && !currentOutfitIds.some(id => String(id) === String(c.id)));
 
   const allCategories = [...new Set(availableClothes.flatMap(c => c.categories || []))]
     .filter(cat => cat && cat.trim() !== '')
@@ -48,16 +58,6 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
     setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
   };
 
-  const FancyCheckPurple = ({ isChecked }) => (
-    <div className={`w-5 h-5 rounded-md border-2 transition-all duration-150 flex items-center justify-center shrink-0 ${
-      isChecked 
-        ? 'bg-purple-600 border-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.3)]' 
-        : 'bg-white border-slate-300 group-hover:border-slate-400'
-    }`}>
-      {isChecked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />}
-    </div>
-  );
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 relative">
@@ -68,8 +68,17 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
 
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50 shrink-0 z-20 relative">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5 text-purple-600" />
-            Wybierz ubranie na podmianę
+            {mode === 'swap' ? (
+              <>
+                <ArrowLeftRight className="w-5 h-5 text-purple-600" />
+                Wybierz ubranie na podmianę
+              </>
+            ) : (
+              <>
+                <PlusCircle className="w-5 h-5 text-purple-600" />
+                Wybierz ubranie do dodania
+              </>
+            )}
           </h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-200 border border-slate-200 p-2 rounded-full transition-colors shadow-sm">
             <X className="w-5 h-5" />
