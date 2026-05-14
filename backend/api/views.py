@@ -156,7 +156,17 @@ def confirm_outfit(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_clothes(request):
-    clothes = Cloth.objects.filter(user=request.user)
+    sort_by = request.GET.get('sort_by', '-creation_date')
+
+    allowed_sort_fields = [
+        'creation_date', '-creation_date',  # Od najstarszych / od najnowszych
+        'color', '-color',                  # Alfabetycznie po kolorze (A-Z / Z-A)
+    ]
+
+    if sort_by not in allowed_sort_fields:
+        sort_by = '-creation_date'
+
+    clothes = Cloth.objects.filter(user=request.user).order_by(sort_by).distinct()
     
     data = []
     for cloth in clothes:
@@ -165,7 +175,8 @@ def get_user_clothes(request):
             'color': cloth.color,
             'description': cloth.description,
             'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None,
-            'categories': list(cloth.category_set.values_list('name', flat=True))
+            'categories': list(cloth.category_set.values_list('name', flat=True)),
+            'creation_date': cloth.creation_date
         })
         
     return Response(data, status=status.HTTP_200_OK)
@@ -185,7 +196,8 @@ def cloth_detail_or_delete(request, pk):
             'color': cloth.color,
             'description': cloth.description,
             'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None,
-            'categories': list(cloth.category_set.values_list('name', flat=True))
+            'categories': list(cloth.category_set.values_list('name', flat=True)),
+            'creation_date': cloth.creation_date
         })
 
     elif request.method == 'DELETE':
