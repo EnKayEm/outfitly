@@ -187,6 +187,13 @@ useEffect(() => {
     currentPage * itemsPerPage
   );
 
+  // Zabezpieczenie przed "pustą stroną" po usunięciu elementów
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
   const getPageNumbers = () => {
       const pages = [];
       const maxVisible = 3; // Ile stron pokazywać wokół obecnej
