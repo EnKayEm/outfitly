@@ -1,19 +1,40 @@
+import React from 'react';
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pl-PL', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
 export default function ClothingCard({ item, onClick, children }) {
   const validCategories = item.categories 
     ? item.categories.filter(cat => cat && cat.trim() !== '') 
     : [];
 
+const itemDate = item.creation_date;
+
   return (
-      <div 
-        onClick={() => onClick(item.id)}
-        className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200 h-full"
-      >     
-      <div className="aspect-square w-full bg-slate-50 overflow-hidden">
+    <div 
+      onClick={() => onClick(item.id)}
+      className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200 h-full"
+    >     
+      <div className="aspect-square w-full bg-slate-50 overflow-hidden relative">
         <img
           src={item.image_url}
           alt={item.description || "Ubranie"}
           className="w-full h-full object-cover"
         />
+        
+        {/* Odznaka z datą */}
+        {itemDate && (
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md border border-slate-700">
+            {formatDate(itemDate)}
+          </div>
+        )}
       </div>
       
       <div className="p-4 flex-1 flex flex-col">

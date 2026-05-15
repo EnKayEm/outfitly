@@ -4,19 +4,26 @@ import ClothingCard from '../components/ClothingCard';
 import ClothingSkeleton from '../components/ClothingSkeleton';
 import AddClothingModal from '../components/AddClothingModal';
 import ClothingDetailsModal from '../components/ClothingDetailsModal';
-import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter } from 'lucide-react';
-import { Check } from 'lucide-react';
+import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Dashboard() {
   const [clothes, setClothes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
+
   // Stany dla filtrów i sortowania
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]); // Nowy stan dla kolorów
   const [sortBy, setSortBy] = useState('newest');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategories, selectedColors, sortBy]);
 
   // Stany dla otwarcia dropdownów
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -35,7 +42,9 @@ export default function Dashboard() {
 
   const sortOptions = [
     { id: 'newest', label: 'Najnowsze' },
-    { id: 'oldest', label: 'Najstarsze' }
+    { id: 'oldest', label: 'Najstarsze' },
+    { id: 'color_asc', label: 'Kolor (A-Z)' },
+    { id: 'color_desc', label: 'Kolor (Z-A)' }
   ];
 
   const FancyCheck = ({ isChecked }) => (
@@ -128,7 +137,36 @@ useEffect(() => {
     }
 
     // 4. Sortowanie
-    result.sort((a, b) => (sortBy === 'newest' ? b.id - a.id : a.id - b.id));
+    result.sort((a, b) => {
+      // Pobieramy daty, używając poprawnego klucza z backendu (creation_date)
+      const dateA = new Date(a.creation_date || 0).getTime();
+      const dateB = new Date(b.creation_date || 0).getTime();
+      const colorA = a.color || "";
+      const colorB = b.color || "";
+
+      switch (sortBy) {
+        case 'newest':
+          // Od najnowszych (jeśli daty równe, sortuje po kolorze A-Z)
+          if (dateA !== dateB) return dateB - dateA;
+          return colorA.localeCompare(colorB);
+          
+        case 'oldest':
+          // Od najstarszych
+          if (dateA !== dateB) return dateA - dateB;
+          return colorA.localeCompare(colorB);
+          
+        case 'color_asc':
+          // Kolor alfabetycznie A-Z
+          return colorA.localeCompare(colorB);
+          
+        case 'color_desc':
+          // Kolor alfabetycznie Z-A
+          return colorB.localeCompare(colorA);
+          
+        default:
+          return 0;
+      }
+    });
 
     return result;
   }, [clothes, searchQuery, selectedCategories, selectedColors, sortBy]);
@@ -142,6 +180,38 @@ useEffect(() => {
   };
 
   const activeSortLabel = sortOptions.find(opt => opt.id === sortBy)?.label || 'Sortuj';
+
+  const totalPages = Math.ceil(processedClothes.length / itemsPerPage);
+  const currentClothes = processedClothes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const getPageNumbers = () => {
+      const pages = [];
+      const maxVisible = 3; // Ile stron pokazywać wokół obecnej
+
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1); // Zawsze pierwsza
+
+        if (currentPage > 3) pages.push('...');
+
+        let start = Math.max(2, currentPage - 1);
+        let end = Math.min(totalPages - 1, currentPage + 1);
+
+        // Korekta okienka przy końcach
+        if (currentPage <= 3) end = 4;
+        if (currentPage >= totalPages - 2) start = totalPages - 3;
+
+        for (let i = start; i <= end; i++) pages.push(i);
+
+        if (currentPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages); // Zawsze ostatnia
+      }
+      return pages;
+    };
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
@@ -273,7 +343,7 @@ useEffect(() => {
                 <span className="text-slate-500 font-normal mr-1">Sortuj:</span> 
                 {activeSortLabel}
               </span>
-              <span className={`text-[10px] text-slate-400 transition-transform ml-1 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
+              <span className={`text-[10px] text-slate-900 transition-transform ml-1 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
             {isSortOpen && (
@@ -310,8 +380,8 @@ useEffect(() => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, idx) => <ClothingSkeleton key={idx} />)
-        ) : processedClothes.length > 0 ? (
-            processedClothes.map(item => (
+        ) : currentClothes.length > 0 ? ( // ZMIANA: używamy currentClothes
+            currentClothes.map(item => (
               <ClothingCard 
                 key={item.id} 
                 item={item} 
@@ -327,6 +397,51 @@ useEffect(() => {
           </div>
         )}
       </div>
+      {/* Paginacja - pojawia się tylko, gdy jest więcej niż 1 strona */}
+{totalPages > 1 && (
+  <div className="flex flex-wrap justify-center items-center gap-2 mt-10 mb-6">
+    {/* Przycisk Poprzednia */}
+    <button 
+      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 flex items-center justify-center"
+    >
+      <span className="sr-only">Poprzednia</span>
+      <ChevronLeft className="w-5 h-5" />
+    </button>
+
+    {/* Numery stron */}
+    <div className="flex items-center gap-1">
+      {getPageNumbers().map((page, index) => (
+        page === '...' ? (
+          <span key={`dots-${index}`} className="px-3 py-2 text-slate-400">...</span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`w-10 h-10 rounded-lg text-sm font-semibold transition-all ${
+              currentPage === page 
+                ? 'bg-blue-600 text-white shadow-blue-200 shadow-lg' 
+                : 'text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200'
+            }`}
+          >
+            {page}
+          </button>
+        )
+      ))}
+    </div>
+
+    {/* Przycisk Następna */}
+    <button 
+      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 flex items-center justify-center"
+    >
+      <span className="sr-only">Następna</span>
+      <ChevronRight className="w-5 h-5" />
+    </button>
+  </div>
+)}
       <AddClothingModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags } from 'lucide-react';
+import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags, Calendar } from 'lucide-react';
 
 export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSuccess, availableCategories = [] }) {
   const [clothing, setClothing] = useState(null);
@@ -133,6 +133,16 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     }
   };
 
+  const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pl-PL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
   if (!isOpen) return null;
 
   return (
@@ -192,6 +202,17 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                     {!isEditing ? (
                       // TRYB ODCZYTU
                       <div className="flex flex-col gap-6">
+                        {/* DATA DODANIA */}
+                        {clothing.creation_date && (
+                          <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                              <Calendar className="w-3 h-3" /> Data dodania
+                            </p>
+                            <p className="text-slate-700 font-medium text-lg">
+                              {formatDate(clothing.creation_date)}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><AlignLeft className="w-3 h-3" /> Opis</p>
                           <h3 className="text-xl font-semibold text-slate-800 leading-relaxed">{clothing.description || 'Brak opisu'}</h3>
