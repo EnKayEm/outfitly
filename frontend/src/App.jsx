@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import StyleCreator from './pages/StyleCreator';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import MyOutfits from './pages/MyOutfits';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/style-creator" element={<StyleCreator />} /> 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/my-outfits" element={<MyOutfits />} />
         </Route>
       </Route>
 
