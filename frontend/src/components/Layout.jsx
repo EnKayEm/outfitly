@@ -8,7 +8,10 @@ export default function Layout() {
   const handleLogout = async () => {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
-      await api.post('auth/logout/', { refresh: refreshToken });
+      
+      if (refreshToken) {
+        await api.post('auth/logout/', { refresh: refreshToken });
+      }
     } catch (err) {
       console.error("Błąd podczas informowania backendu o wylogowaniu", err);
     } finally {

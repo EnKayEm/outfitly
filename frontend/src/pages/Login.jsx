@@ -2,18 +2,27 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 
+
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Zapobiega przeładowaniu strony
+    e.preventDefault();
     setError('');
 
+    if (!username || !password) {
+      setError('Uzupełnij wszystkie pola');
+      return;
+    }
+
     try {
-      // Wywołanie endpointu logowania
+      setLoading(true); // start loading
+
       const response = await api.post('auth/login/', {
         login: username,
         password: password,
@@ -22,12 +31,21 @@ export default function Login() {
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
 
-      // Przekierowujemy na stronę główną (Dashboard)
       navigate('/dashboard');
     } catch (err) {
-      setError('Błędny login lub hasło.');
+      // lepsza obsługa błędów backendu
+      if (err.response?.status === 401) {
+        setError('Niepoprawny login lub hasło');
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError('Błąd serwera. Spróbuj ponownie.');
+      }
+    } finally {
+      setLoading(false); // stop loading
     }
   };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-50">
@@ -62,11 +80,27 @@ export default function Login() {
           
           <button 
             type="submit" 
-            className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300"
           >
-            Zaloguj się
+            {loading ? 'Logowanie...' : 'Zaloguj się'}
           </button>
         </form>
+        <div className="flex justify-between text-sm mt-4">
+          <span
+            className="text-blue-600 cursor-pointer"
+            onClick={() => navigate('/register')}
+          >
+            Rejestracja
+          </span>
+
+          <span
+            className="text-blue-600 cursor-pointer"
+            onClick={() => navigate('/reset-password')}
+          >
+            Zapomniałeś hasła?
+          </span>
+        </div>
       </div>
     </div>
   );
