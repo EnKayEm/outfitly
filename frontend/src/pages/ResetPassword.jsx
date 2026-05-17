@@ -60,7 +60,7 @@ export default function ResetPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-yellow-500 text-white py-2 rounded-lg disabled:bg-yellow-300"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300"
           >
             {loading ? 'Wysyłanie...' : 'Resetuj hasło'}
           </button>

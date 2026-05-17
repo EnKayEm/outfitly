@@ -104,6 +104,14 @@ export default function StyleCreator() {
       };
     });
   };
+  
+  const toggleFavorite = async (id) => {
+    try {
+      await api.post(`compositions/${id}/favorite/`);
+    } catch (err) {
+      console.error('Błąd fav', err);
+    }
+  };
 
   const handleSaveOutfit = async () => {
     if (!generatedData || !generatedData.suggested_outfit_ids || generatedData.suggested_outfit_ids.length === 0) {
@@ -205,7 +213,7 @@ export default function StyleCreator() {
               className="flex-1 md:flex-none px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold shadow-md shadow-purple-200 hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Save className="w-4 h-4" /> 
-              {isSaving ? 'Zapisywanie...' : (successMessage ? 'Zapisano!' : 'Zapisz stylizację')}
+              {isSaving ? 'Zapisywanie...' : (successMessage ? 'Zapisano!' : 'Zapisz do kolekcji')}
             </button>
           </div>
         </div>
@@ -251,6 +259,16 @@ export default function StyleCreator() {
                     <span className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-full after:border-4 after:border-transparent after:border-l-slate-800">
                       Podmień element
                     </span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(item.id);
+                    }}
+                    className="absolute bottom-3 right-3 bg-white/90 p-2 rounded-lg shadow border border-slate-200 hover:text-red-500 transition"
+                  >
+                    ❤️
                   </button>
 
                 </ClothingCard>

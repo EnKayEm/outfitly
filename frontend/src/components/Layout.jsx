@@ -49,6 +49,14 @@ export default function Layout() {
               >
                 <Sparkles className="w-4 h-4" /> Kreator Stylizacji
               </NavLink>
+              <NavLink 
+                to="/my-outfits" 
+                className={({ isActive }) => `px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                  isActive ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <Shirt className="w-4 h-4" /> Moje stylizacje
+              </NavLink>
             </nav>
           </div>
           

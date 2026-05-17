@@ -4,6 +4,7 @@ import api from '../api/axiosConfig';
 
 export default function Register() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +17,7 @@ export default function Register() {
     setError('');
 
     // walidacja
-    if (!username || !password || !repeatPassword) {
+    if (!username || !email || !password || !repeatPassword) {
       setError('Uzupełnij wszystkie pola');
       return;
     }
@@ -31,6 +32,7 @@ export default function Register() {
 
       await api.post('auth/register/', {
         login: username,
+        email: email,
         password: password,
       });
 
@@ -76,6 +78,19 @@ export default function Register() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          
           <div>
             <label className="block text-sm font-medium text-slate-700">
               Hasło
