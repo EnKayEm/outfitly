@@ -3,8 +3,14 @@ import { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import ClothingCard from '../components/ClothingCard';
 import { useNavigate } from 'react-router-dom';
+import { isAuthenticated } from '../api/auth';
+import { demoOutfits } from '../data/demoData';
+
+
 
 export default function MyOutfits() {
+  
+  const [showGuestModal, setShowGuestModal] = useState(false);
   const [outfits, setOutfits] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,8 +20,13 @@ export default function MyOutfits() {
   const [outfitToDelete, setOutfitToDelete] = useState(null);
   const navigate = useNavigate();
 
-
+  
   const fetchOutfits = async () => {
+    if (!isAuthenticated()) {
+      setOutfits(demoOutfits);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await api.get('compositions/');
@@ -30,6 +41,11 @@ export default function MyOutfits() {
 
 // toggle favorite (frontend only)
 const toggleFavorite = (id) => {
+  if (!isAuthenticated()) {
+    setShowGuestModal(true);
+    return;
+  }
+
   setOutfits(prev =>
     prev.map(o =>
       o.id === id ? { ...o, is_favorite: !o.is_favorite } : o
@@ -37,10 +53,17 @@ const toggleFavorite = (id) => {
   );
 };
 
+
 // 🗑 usuwanie (frontend only)
 const handleDelete = (id) => {
+  if (!isAuthenticated()) {
+    setShowGuestModal(true);
+    return;
+  }
+
   setOutfits(prev => prev.filter(o => o.id !== id));
 };
+
 
 const filteredOutfits = outfits.filter(o =>
   showFavorites ? o.is_favorite : true
@@ -250,6 +273,45 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
           </div>
         </div>
       )}
+
+    {showGuestModal && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+          <button
+            onClick={() => setShowGuestModal(false)}
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          >
+            ✕
+          </button>
+
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">
+            Funkcja dostępna po zalogowaniu
+          </h2>
+
+          <p className="text-slate-500 mb-6">
+            Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+          </p>
+
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => setShowGuestModal(false)}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+            >
+              Zostań w demo
+            </button>
+
+            <button
+              onClick={() => navigate('/login')}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              Zaloguj się
+            </button>
+          </div>
+
+        </div>
+      </div>
+    )}
 
     </div>
   );

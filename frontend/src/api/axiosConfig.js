@@ -48,7 +48,6 @@ api.interceptors.response.use(
         // Jeśli refresh_token też wygasł, czyścimy dane użytkownika i wyrzucamy do logowania
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }

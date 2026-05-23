@@ -5,8 +5,14 @@ import ClothingSkeleton from '../components/ClothingSkeleton';
 import AddClothingModal from '../components/AddClothingModal';
 import ClothingDetailsModal from '../components/ClothingDetailsModal';
 import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { isAuthenticated } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { demoClothes } from '../data/demoData';
+
 
 export default function Dashboard() {
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const navigate = useNavigate();
   const [clothes, setClothes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,6 +65,12 @@ export default function Dashboard() {
 
 useEffect(() => {
   const fetchClothes = async () => {
+    if (!isAuthenticated()) {
+      setClothes(demoClothes);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await api.get('clothes/');
@@ -69,6 +81,7 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
+
   fetchClothes();
 }, [refreshTrigger]);
 
@@ -375,8 +388,15 @@ useEffect(() => {
             )}
           </div>
 
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
+          <button
+            onClick={() => {
+              if (!isAuthenticated()) {
+                setShowGuestModal(true);
+                return;
+              }
+              setIsAddModalOpen(true);
+            }}
+
             className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <Plus className="w-5 h-5" /> Dodaj Ubranie
@@ -393,6 +413,11 @@ useEffect(() => {
                 key={item.id} 
                 item={item} 
                 onClick={(id) => {
+                  if (!isAuthenticated()) {
+                    setShowGuestModal(true);
+                    return;
+                  }
+
                   setSelectedClothingId(id);
                   setIsDetailsModalOpen(true);
                 }}
@@ -465,6 +490,45 @@ useEffect(() => {
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
         availableCategories={availableCategories} 
       />
+      
+      {showGuestModal && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+                  <button
+                    onClick={() => setShowGuestModal(false)}
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+                  >
+                    ✕
+                  </button>
+
+                  <h2 className="text-xl font-semibold text-slate-800 mb-2">
+                    Funkcja dostępna po zalogowaniu
+                  </h2>
+
+                  <p className="text-slate-500 mb-6">
+                    Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+                  </p>
+
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={() => setShowGuestModal(false)}
+                      className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                    >
+                      Zostań w demo
+                    </button>
+
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                    >
+                      Zaloguj się
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            )}
     </div>
   );
 }

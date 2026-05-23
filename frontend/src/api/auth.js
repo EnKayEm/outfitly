@@ -47,3 +47,7 @@ export const resetPassword = async (email) => {
 
   return res.json();
 };
+
+export const isAuthenticated = () => {
+  return !!localStorage.getItem('access_token');
+};
