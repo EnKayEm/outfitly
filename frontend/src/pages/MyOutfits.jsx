@@ -5,11 +5,13 @@ import ClothingCard from '../components/ClothingCard';
 import { useNavigate } from 'react-router-dom';
 import { isAuthenticated } from '../api/auth';
 import { demoOutfits } from '../data/demoData';
-
+import ClothingDetailsModal from '../components/ClothingDetailsModal';
 
 
 export default function MyOutfits() {
   
+  const [selectedClothingId, setSelectedClothingId] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [outfits, setOutfits] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
@@ -91,15 +93,11 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
 
   return (
     <div className="max-w-6xl mx-auto">
-        <h1 className={`text-3xl font-bold mb-6 ${
-          filteredOutfits.length === 0 ? 'text-center' : 'text-left'
-        }`}>
+        <h1 className="text-3xl font-bold mb-6 text-left">
           Moje stylizacje
         </h1>
 
-        <div className={`mb-6 flex gap-3 ${
-          filteredOutfits.length === 0 ? 'justify-center' : 'justify-start'
-        }`}>
+        <div className="mb-6 flex gap-3 justify-start">
         <button
             onClick={() => {
             setShowFavorites(false);
@@ -130,13 +128,13 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
         </div>
       
       {filteredOutfits.length === 0 ? (
-        <div className="flex flex-col items-center justify-center mt-20 text-center">
+        <div className="flex flex-col items-center mt-10 w-full">
           
           {showFavorites && (
-            <div className="text-4xl mb-3">❤️</div>
+            <div className="text-4xl mb-3 self-center">❤️</div>
           )}
 
-        <p className="text-slate-500 text-lg mb-4">
+        <p className="text-slate-500 text-lg mb-4 text-left">
           {showFavorites
             ? 'Nie masz jeszcze ulubionych stylizacji'
             : 'Brak zapisanych stylizacji.'}
@@ -166,7 +164,19 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
               {/* jeśli backend zwraca ubrania */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">          
                 {outfit.clothes?.map((item) => (
-                <ClothingCard key={item.id} item={item} />
+                <ClothingCard 
+                  key={item.id} 
+                  item={item} 
+                  onClick={(id) => {
+                    if (!isAuthenticated()) {
+                      setShowGuestModal(true);
+                      return;
+                    }
+
+                    setSelectedClothingId(id);
+                    setIsDetailsModalOpen(true);
+                  }}
+                />
                 ))}
               </div>
 
@@ -321,6 +331,15 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
         </div>
       </div>
     )}
+
+    <ClothingDetailsModal
+      isOpen={isDetailsModalOpen}
+      onClose={() => {
+        setIsDetailsModalOpen(false);
+        setSelectedClothingId(null);
+      }}
+      clothingId={selectedClothingId}
+    />
 
     </div>
   );

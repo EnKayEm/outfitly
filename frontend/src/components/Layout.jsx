@@ -109,7 +109,7 @@ export default function Layout() {
 
         </div>
       </header>
-      <main className="flex-grow max-w-7xl w-auto mx-auto px-4 py-8">
+      <main className="flex-grow max-w-7xl px-4 py-8">
         <Outlet />
       </main>
     </div>
