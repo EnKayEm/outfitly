@@ -28,8 +28,17 @@ export default function Layout() {
 
     {/* TRYB DEMO */}
     {!isAuthenticated() && (
-      <div className="bg-yellow-50 text-yellow-700 text-center text-sm py-2 border-b">
-        Korzystasz z trybu demo — zaloguj się, aby zapisywać dane
+      <div className="bg-yellow-50 text-yellow-700 text-center text-sm py-2 border-b flex justify-center items-center gap-2">
+        <span>Korzystasz z trybu demo —</span>
+
+        <button
+          onClick={() => navigate('/login')}
+          className="font-semibold underline hover:text-yellow-900 transition"
+        >
+          zaloguj się,
+        </button>
+
+        <span> aby zapisywać dane</span>
       </div>
     )}
 
