@@ -6,6 +6,7 @@ import ClothingCard from '../components/ClothingCard';
 import SwapClothingModal from '../components/SwapClothingModal';
 import { isAuthenticated } from '../api/auth';
 import { useNavigate } from 'react-router-dom';
+import { demoClothes } from '../data/demoData';
 
 export default function StyleCreator() {
   const [showGuestModal, setShowGuestModal] = useState(false);
@@ -27,19 +28,28 @@ export default function StyleCreator() {
   const popularOccasions = ['Wesele', 'Praca w biurze', 'Randka', 'Spacer', 'Wyjście ze znajomymi'];
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      setClothes(demoClothes);
+      return;
+    }
+
     api.get('clothes/')
       .then(response => setClothes(response.data))
       .catch(err => console.error("Błąd pobierania szafy:", err));
   }, []);
 
   const handleGenerate = async (e, specificOccasion = occasion) => {
+    e?.preventDefault();
+
+    if (!specificOccasion.trim()) {
+        setError("Podaj okazję");
+        return;
+      }
+    
     if (!isAuthenticated()) {
       setShowGuestModal(true);
       return;
     }
-
-    e?.preventDefault();
-    if (!specificOccasion.trim()) return;
 
     setIsGenerating(true);
     setError(null);
@@ -328,19 +338,7 @@ export default function StyleCreator() {
                     </span>
                   </button>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!isAuthenticated()) {
-                        setShowGuestModal(true);
-                        return;
-                      }
-                      toggleFavorite(item.id);
-                    }}
-                    className="absolute bottom-3 right-3 bg-white/90 p-2 rounded-lg shadow border border-slate-200 hover:text-red-500 transition"
-                  >
-                    ❤️
-                  </button>
+                  
 
                 </ClothingCard>
               ))}
