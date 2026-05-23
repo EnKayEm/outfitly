@@ -65,9 +65,15 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
 
   return (
     <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Moje stylizacje</h1>
+        <h1 className={`text-3xl font-bold mb-6 ${
+          filteredOutfits.length === 0 ? 'text-center' : 'text-left'
+        }`}>
+          Moje stylizacje
+        </h1>
 
-        <div className="mb-4 flex gap-3">
+        <div className={`mb-6 flex gap-3 ${
+          filteredOutfits.length === 0 ? 'justify-center' : 'justify-start'
+        }`}>
         <button
             onClick={() => {
             setShowFavorites(false);
@@ -96,9 +102,21 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
             Ulubione ❤️
         </button>
         </div>
+      
+      {filteredOutfits.length === 0 ? (
+        <div className="flex flex-col items-center justify-center mt-20 text-center">
+          
+          {showFavorites && (
+            <div className="text-4xl mb-3">❤️</div>
+          )}
 
-      {outfits.length === 0 ? (
-        <p className="text-slate-500">Brak zapisanych stylizacji.</p>
+          <p className="text-slate-500 text-lg">
+            {showFavorites
+              ? 'Nie masz jeszcze ulubionych stylizacji'
+              : 'Brak zapisanych stylizacji.'}
+          </p>
+
+        </div>
       ) : (
         <>
         <div className="space-y-8">

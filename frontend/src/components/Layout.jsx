@@ -25,14 +25,14 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap sm:flex-nowrap justify-between items-center gap-4">
           
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 flex-nowrap whitespace-nowrap">
             <Link to="/" className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Shirt className="w-7 h-7 text-blue-600" strokeWidth={2.5} /> Outfitly
             </Link>
             
-            <nav className="flex gap-2">
+            <nav className="flex gap-2 flex-nowrap whitespace-nowrap">
               <NavLink 
                 to="/dashboard" 
                 className={({ isActive }) => `px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${

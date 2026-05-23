@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
 import api from '../api/axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleReset = async (e) => {
     e.preventDefault();
@@ -65,6 +67,15 @@ export default function ResetPassword() {
             {loading ? 'Wysyłanie...' : 'Resetuj hasło'}
           </button>
         </form>
+        <div className="mt-4 text-center text-sm text-slate-600">
+          Pamiętasz hasło?{' '}
+          <span
+            onClick={() => navigate('/login')}
+            className="text-blue-600 hover:underline cursor-pointer font-medium"
+          >
+            Wróć do logowania
+          </span>
+        </div>
       </div>
     </div>
   );

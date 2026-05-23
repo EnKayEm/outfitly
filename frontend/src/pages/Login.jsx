@@ -88,14 +88,14 @@ export default function Login() {
         </form>
         <div className="flex justify-between text-sm mt-4">
           <span
-            className="text-blue-600 cursor-pointer"
+            className="text-blue-600 hover:underline cursor-pointer transition"
             onClick={() => navigate('/register')}
           >
             Rejestracja
           </span>
-
+          
           <span
-            className="text-blue-600 cursor-pointer"
+            className="text-blue-600 hover:underline cursor-pointer transition"
             onClick={() => navigate('/reset-password')}
           >
             Zapomniałeś hasła?

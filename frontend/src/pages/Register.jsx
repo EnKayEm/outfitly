@@ -125,6 +125,15 @@ export default function Register() {
             {loading ? 'Rejestracja...' : 'Zarejestruj się'}
             </button>
         </form>
+        <div className="mt-4 text-center text-sm text-slate-600">
+          Masz już konto?{' '}
+          <span
+            onClick={() => navigate('/login')}
+            className="text-blue-600 hover:underline cursor-pointer font-medium"
+          >
+            Zaloguj się
+          </span>
+        </div>
       </div>
     </div>
   );
