@@ -191,40 +191,49 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
         </div>
         
 
-        {/* ✅ PAGINACJA */}
-                <div className="flex justify-center mt-8 gap-2">
-                    <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
-                    disabled={currentPage === 1}
-                    >
-                    ←
-                    </button>
+        
+      {/* PAGINACJA */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-8 gap-2">
 
-                    {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                        key={i}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`px-3 py-1 rounded ${
-                        currentPage === i + 1
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-100 hover:bg-slate-200'
-                        }`}
-                    >
-                        {i + 1}
-                    </button>
-                    ))}
+          {/* ← tylko jeśli nie jesteśmy na pierwszej */}
+          {currentPage > 1 && (
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
+            >
+              ←
+            </button>
+          )}
 
-                    <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
-                    disabled={currentPage === totalPages}
-                    >
-                    →
-                    </button>
-                </div>
-                </>
+          {/* NUMERY STRON */}
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
 
+          {/* → tylko jeśli nie jesteśmy na ostatniej */}
+          {currentPage < totalPages && (
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
+            >
+              →
+            </button>
+          )}
+
+        </div>
+      )}
+      </>
       )}
 
       {/* MODAL USUWANIA */}
