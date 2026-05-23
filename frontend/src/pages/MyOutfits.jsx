@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import ClothingCard from '../components/ClothingCard';
+import { useNavigate } from 'react-router-dom';
 
 export default function MyOutfits() {
   const [outfits, setOutfits] = useState([]);
@@ -10,6 +11,8 @@ export default function MyOutfits() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const outfitsPerPage = 6;
+  const [outfitToDelete, setOutfitToDelete] = useState(null);
+  const navigate = useNavigate();
 
 
   const fetchOutfits = async () => {
@@ -110,11 +113,21 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
             <div className="text-4xl mb-3">❤️</div>
           )}
 
-          <p className="text-slate-500 text-lg">
-            {showFavorites
-              ? 'Nie masz jeszcze ulubionych stylizacji'
-              : 'Brak zapisanych stylizacji.'}
-          </p>
+        <p className="text-slate-500 text-lg mb-4">
+          {showFavorites
+            ? 'Nie masz jeszcze ulubionych stylizacji'
+            : 'Brak zapisanych stylizacji.'}
+        </p>
+
+        {/* ✅ przycisk tylko dla "Wszystkie" */}
+        {!showFavorites && (
+          <button
+            onClick={() => navigate('/style-creator')}
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Przejdź do kreatora stylizacji
+          </button>
+        )}
 
         </div>
       ) : (
@@ -144,7 +157,7 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
 
                 {/* 🗑 przycisk usuwania */}
                 <button
-                onClick={() => handleDelete(outfit.id)}
+                onClick={() => setOutfitToDelete(outfit)}
                 className="mt-2 text-red-500 hover:underline text-sm block"
                 >
                 Usuń stylizację
@@ -190,6 +203,55 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
                 </>
 
       )}
+
+      {/* MODAL USUWANIA */}
+      {outfitToDelete && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          
+          <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6">
+            
+            {/* ❌ X */}
+            <button
+              onClick={() => setOutfitToDelete(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">
+              Usuń stylizację
+            </h2>
+
+            <p className="text-slate-500 mb-6">
+              Czy na pewno chcesz usunąć tę stylizację?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              
+              <button
+                onClick={() => setOutfitToDelete(null)}
+                className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+              >
+                Anuluj
+              </button>
+
+              <button
+                onClick={() => {
+                  handleDelete(outfitToDelete.id);
+                  setOutfitToDelete(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Usuń
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+
