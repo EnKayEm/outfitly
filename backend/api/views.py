@@ -7,6 +7,8 @@ from rest_framework.decorators import api_view, permission_classes
 from database.models import Cloth, Category, OutfitlyUser, Composition
 from .ai_service import analyze_cloth_image
 from .ai_service import generate_stylization
+import requests
+from django.core.files.temp import NamedTemporaryFile
 
 # Endpoint do wylogowania użytkownika - POST /api/logout/
 @api_view(['POST'])
@@ -31,7 +33,13 @@ def upload_and_analyze_cloth(request):
     user = request.user
 
     cloth = Cloth.objects.create(user=user, image=image_file)
-    ai_data = analyze_cloth_image(cloth.image.path)
+    response = requests.get(cloth.image.url)
+    
+    with NamedTemporaryFile(delete=True) as tmp_file:
+        tmp_file.write(response.content)
+        tmp_file.flush()
+
+        ai_data = analyze_cloth_image(tmp_file.name)
 
     if ai_data.get('error') == 'not_clothing':
         cloth.delete()
@@ -166,7 +174,7 @@ def get_user_clothes(request):
     if sort_by not in allowed_sort_fields:
         sort_by = '-creation_date'
 
-    clothes = Cloth.objects.filter(user=request.user).order_by(sort_by).distinct()
+    clothes = Cloth.objects.filter(user=request.user).prefetch_related('category_set').order_by(sort_by).distinct()
     
     data = []
     for cloth in clothes:
