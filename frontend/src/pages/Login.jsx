@@ -24,7 +24,7 @@ export default function Login() {
       setLoading(true); // start loading
 
       const response = await api.post('auth/login/', {
-        login: username,
+        username: username,
         password: password,
       });
 
