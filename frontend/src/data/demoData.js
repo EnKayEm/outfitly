@@ -7,6 +7,7 @@ export const demoOutfits = [
     id: 1,
     occasion: "Casual",
     is_favorite: false,
+    created_at: "2024-01-15T10:30:00Z",
     clothes: [
       {
         id: 101,

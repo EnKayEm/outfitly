@@ -424,8 +424,19 @@ useEffect(() => {
               />
           ))
         ) : (
-          <div className="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-100 rounded-2xl">
-            Nie znaleziono ubrań dla podanych kryteriów.
+          <div className="col-span-full min-h-[60vh] flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-slate-100 rounded-2xl">
+            {clothes.length === 0 ? (
+              <>
+                <Shirt className="w-10 h-10 mb-3 text-slate-300" />
+                <p className="text-lg">Twoja szafa jest pusta.</p>
+                <p className="text-sm text-slate-400 mt-1">Dodaj swoje pierwsze ubranie, klikając przycisk powyżej.</p>
+              </>
+            ) : (
+              <>
+                <Search className="w-10 h-10 mb-3 text-slate-300" />
+                <p className="text-lg">Nie znaleziono ubrań dla podanych kryteriów.</p>
+              </>
+            )}
           </div>
         )}
       </div>

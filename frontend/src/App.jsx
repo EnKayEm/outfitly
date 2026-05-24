@@ -7,6 +7,7 @@ import StyleCreator from './pages/StyleCreator';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import MyOutfits from './pages/MyOutfits';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -17,9 +18,10 @@ function App() {
 
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/style-creator" element={<StyleCreator />} /> 
+        <Route path="/style-creator" element={<StyleCreator />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/my-outfits" element={<MyOutfits />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
