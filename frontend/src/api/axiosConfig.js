@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 // 1. Tworzymy główną instancję z bazowym adresem API Backendowego
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: `${API_URL}/api/`,
 });
 
 // 2. REQUEST INTERCEPTOR - Uruchamia się przed każdym wysłaniem zapytania
@@ -33,7 +35,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refresh_token');
         
         // Próba odświeżenia tokena uderzając w endpoint /auth/refresh/
-        const response = await axios.post('http://localhost:8000/api/auth/refresh/', {
+        const response = await axios.post(`${API_URL}/api/auth/refresh/`, {
           refresh: refreshToken,
         });
 
