@@ -41,16 +41,17 @@ export default function ResetPassword() {
 
         <form onSubmit={handleReset} className="space-y-4 text-left">
           {message && (
-            <div className="text-sm bg-slate-100 p-2 rounded">
+            <div role="alert" className="text-sm bg-slate-100 p-2 rounded">
               {message}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">
+            <label htmlFor="reset-email" className="block text-sm font-medium text-slate-700">
               Email
             </label>
             <input
+              id="reset-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -69,12 +70,13 @@ export default function ResetPassword() {
         </form>
         <div className="mt-4 text-center text-sm text-slate-600">
           Pamiętasz hasło?{' '}
-          <span
+          <button
+            type="button"
             onClick={() => navigate('/login')}
-            className="text-blue-600 hover:underline cursor-pointer font-medium"
+            className="text-blue-600 hover:underline font-medium"
           >
             Wróć do logowania
-          </span>
+          </button>
         </div>
       </div>
     </div>

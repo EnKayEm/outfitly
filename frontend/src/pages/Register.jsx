@@ -60,16 +60,17 @@ export default function Register() {
 
         <form onSubmit={handleRegister} className="space-y-4 text-left">
           {error && (
-            <div className="text-red-500 text-sm bg-red-50 p-2 rounded">
+            <div role="alert" className="text-red-500 text-sm bg-red-50 p-2 rounded">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">
+            <label htmlFor="reg-username" className="block text-sm font-medium text-slate-700">
               Nazwa użytkownika
             </label>
             <input
+              id="reg-username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -79,10 +80,11 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">
+            <label htmlFor="reg-email" className="block text-sm font-medium text-slate-700">
               Email
             </label>
             <input
+              id="reg-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -90,12 +92,13 @@ export default function Register() {
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-slate-700">
+            <label htmlFor="reg-password" className="block text-sm font-medium text-slate-700">
               Hasło
             </label>
             <input
+              id="reg-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -105,10 +108,11 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">
+            <label htmlFor="reg-repeat-password" className="block text-sm font-medium text-slate-700">
               Powtórz hasło
             </label>
             <input
+              id="reg-repeat-password"
               type="password"
               value={repeatPassword}
               onChange={(e) => setRepeatPassword(e.target.value)}
@@ -127,12 +131,13 @@ export default function Register() {
         </form>
         <div className="mt-4 text-center text-sm text-slate-600">
           Masz już konto?{' '}
-          <span
+          <button
+            type="button"
             onClick={() => navigate('/login')}
-            className="text-blue-600 hover:underline cursor-pointer font-medium"
+            className="text-blue-600 hover:underline font-medium"
           >
             Zaloguj się
-          </span>
+          </button>
         </div>
       </div>
     </div>

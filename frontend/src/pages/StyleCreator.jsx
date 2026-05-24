@@ -343,13 +343,22 @@ export default function StyleCreator() {
                 </ClothingCard>
               ))}
 
-              <div 
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Dodaj ubranie do stylizacji"
                 onClick={() => {
                   if (!isAuthenticated()) {
                     setShowGuestModal(true);
                     return;
                   }
                   setIsAddModalOpen(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    if (!isAuthenticated()) { setShowGuestModal(true); return; }
+                    setIsAddModalOpen(true);
+                  }
                 }}
                 className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-3xl p-6 cursor-pointer hover:bg-slate-50 hover:border-purple-400 transition-all min-h-[250px] group"
               >

@@ -18,8 +18,12 @@ export default function ClothingCard({ item, onClick, children }) {
 const itemDate = item.creation_date;
 
   return (
-    <div 
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={item.description || 'Ubranie'}
       onClick={() => onClick(item.id)}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick(item.id)}
       className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200 h-full"
     >     
       <div className="aspect-square w-full bg-slate-50 overflow-hidden relative">

@@ -44,6 +44,12 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:shadow-lg focus:text-sm focus:font-medium"
+      >
+        Przejdź do głównej treści
+      </a>
 
       {/* TRYB DEMO */}
       {!isAuthenticated() && (
@@ -67,7 +73,7 @@ export default function Layout() {
               to="/"
               className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2 hover:opacity-80 transition-opacity whitespace-nowrap"
             >
-              <Shirt className="w-7 h-7 text-blue-600" strokeWidth={2.5} /> Outfitly
+              <Shirt aria-hidden="true" className="w-7 h-7 text-blue-600" strokeWidth={2.5} /> Outfitly
             </Link>
 
             {/* Desktop nav */}
@@ -82,7 +88,7 @@ export default function Layout() {
                     }`
                   }
                 >
-                  <Icon className="w-4 h-4" /> {label}
+                  <Icon aria-hidden="true" className="w-4 h-4" /> {label}
                 </NavLink>
               ))}
             </nav>
@@ -148,7 +154,7 @@ export default function Layout() {
                 className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
                 title="Wyloguj się"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut aria-hidden="true" className="w-4 h-4" />
                 <span className="hidden sm:inline">Wyloguj</span>
               </button>
             )}
@@ -179,7 +185,7 @@ export default function Layout() {
                     }`
                   }
                 >
-                  <Icon className="w-4 h-4" /> {label}
+                  <Icon aria-hidden="true" className="w-4 h-4" /> {label}
                 </NavLink>
               ))}
             </nav>
@@ -187,9 +193,20 @@ export default function Layout() {
         )}
       </header>
 
-      <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 flex flex-col">
+      <main id="main-content" className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 flex flex-col">
         <Outlet />
       </main>
+
+      <footer className="border-t border-slate-200 bg-white/80 py-3">
+        <div className="max-w-7xl mx-auto px-4 flex justify-center">
+          <Link
+            to="/deklaracja-dostepnosci"
+            className="text-xs text-slate-400 hover:text-blue-600 transition-colors"
+          >
+            Deklaracja dostępności
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }

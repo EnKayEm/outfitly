@@ -54,23 +54,25 @@ export default function Login() {
         <p className="text-slate-500 mb-6">Witaj w Outfitly!</p>
         
         <form onSubmit={handleLogin} className="space-y-4 text-left">
-          {error && <div className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</div>}
-          
+          {error && <div role="alert" className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</div>}
+
           <div>
-            <label className="block text-sm font-medium text-slate-700">Nazwa użytkownika</label>
-            <input 
-              type="text" 
+            <label htmlFor="login-username" className="block text-sm font-medium text-slate-700">Nazwa użytkownika</label>
+            <input
+              id="login-username"
+              type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-slate-700">Hasło</label>
-            <input 
-              type="password" 
+            <label htmlFor="login-password" className="block text-sm font-medium text-slate-700">Hasło</label>
+            <input
+              id="login-password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -96,19 +98,21 @@ export default function Login() {
 
         </form>
         <div className="flex justify-between text-sm mt-4">
-          <span
-            className="text-blue-600 hover:underline cursor-pointer transition"
+          <button
+            type="button"
+            className="text-blue-600 hover:underline transition"
             onClick={() => navigate('/register')}
           >
             Rejestracja
-          </span>
-          
-          <span
-            className="text-blue-600 hover:underline cursor-pointer transition"
+          </button>
+
+          <button
+            type="button"
+            className="text-blue-600 hover:underline transition"
             onClick={() => navigate('/reset-password')}
           >
             Zapomniałeś hasła?
-          </span>
+          </button>
         </div>
       </div>
     </div>

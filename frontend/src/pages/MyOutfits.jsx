@@ -183,9 +183,10 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
               {/* ❤️ serduszko */}
                 <button
                 onClick={() => toggleFavorite(outfit.id)}
+                aria-label={outfit.is_favorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
                 className="mt-4 text-2xl hover:scale-110 transition"
                 >
-                {outfit.is_favorite ? '❤️' : '🤍'}
+                <span aria-hidden="true">{outfit.is_favorite ? '❤️' : '🤍'}</span>
                 </button>
 
                 {/* 🗑 przycisk usuwania */}

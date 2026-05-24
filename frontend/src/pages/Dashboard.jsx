@@ -237,15 +237,16 @@ useEffect(() => {
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          Twoja Szafa <Shirt className="text-blue-600 w-6 h-6" />
+          Twoja Szafa <Shirt aria-hidden="true" className="text-blue-600 w-6 h-6" />
         </h1>
         
         <div className="flex flex-wrap w-full lg:w-auto gap-3">
           {/* Szukajka z ikoną */}
           <div className="relative flex-1 min-w-[150px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
+              aria-label="Wyszukaj ubranie"
               placeholder="Szukaj po nazwie..."
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               value={searchQuery}
@@ -255,12 +256,14 @@ useEffect(() => {
 
           {/* DROPDOWN KATEGORII */}
           <div className="relative" ref={filterRef}>
-            <button 
+            <button
               onClick={() => {
                 setIsFilterOpen(!isFilterOpen);
                 setIsColorOpen(false);
                 setIsSortOpen(false);
               }}
+              aria-haspopup="listbox"
+              aria-expanded={isFilterOpen}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
                 selectedCategories.length > 0 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white'
               }`}
@@ -303,12 +306,14 @@ useEffect(() => {
 
           {/* DROPDOWN KOLORÓW */}
           <div className="relative" ref={colorRef}>
-            <button 
+            <button
               onClick={() => {
                 setIsColorOpen(!isColorOpen);
                 setIsFilterOpen(false);
                 setIsSortOpen(false);
               }}
+              aria-haspopup="listbox"
+              aria-expanded={isColorOpen}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
                 selectedColors.length > 0 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white'
               }`}
@@ -351,12 +356,14 @@ useEffect(() => {
 
           {/* DROPDOWN SORTOWANIA */}
           <div className="relative" ref={sortRef}>
-            <button 
+            <button
               onClick={() => {
                 setIsSortOpen(!isSortOpen);
                 setIsFilterOpen(false);
                 setIsColorOpen(false);
               }}
+              aria-haspopup="listbox"
+              aria-expanded={isSortOpen}
               className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center justify-between gap-2 transition-colors h-full hover:bg-slate-50 min-w-[190px]"
             >
               <span className="font-medium text-slate-800 truncate">
@@ -399,7 +406,7 @@ useEffect(() => {
 
             className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
-            <Plus className="w-5 h-5" /> Dodaj Ubranie
+            <Plus aria-hidden="true" className="w-5 h-5" /> Dodaj Ubranie
           </button>
         </div>
       </div>

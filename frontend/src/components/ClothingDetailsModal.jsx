@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
 import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags, Calendar } from 'lucide-react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSuccess, availableCategories = [] }) {
   const [clothing, setClothing] = useState(null);
@@ -16,6 +17,9 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
   // Stany dla usuwania
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, isOpen);
 
     useEffect(() => {
         if (!isOpen || !clothingId) return;
@@ -146,20 +150,21 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] md:h-[650px] overflow-hidden">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="details-modal-title">
+      <div ref={modalRef} className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] md:h-[650px] overflow-hidden">
+
         {/* Nagłówek (zamrożony na górze) */}
         <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-white shrink-0">
-          <h2 className="text-xl font-bold text-slate-800">
+          <h2 id="details-modal-title" className="text-xl font-bold text-slate-800">
             {isEditing ? 'Edycja ubrania' : 'Szczegóły ubrania'}
           </h2>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             disabled={isSaving || isDeleting}
+            aria-label="Zamknij okno"
             className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors disabled:opacity-50"
           >
-            <X className="w-5 h-5" />
+            <X aria-hidden="true" className="w-5 h-5" />
           </button>
         </div>
 
@@ -206,7 +211,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                         {clothing.creation_date && (
                           <div>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                              <Calendar className="w-3 h-3" /> Data dodania
+                              <Calendar aria-hidden="true" className="w-3 h-3" /> Data dodania
                             </p>
                             <p className="text-slate-700 font-medium text-lg">
                               {formatDate(clothing.creation_date)}
@@ -214,15 +219,15 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                           </div>
                         )}
                         <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><AlignLeft className="w-3 h-3" /> Opis</p>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><AlignLeft aria-hidden="true" className="w-3 h-3" /> Opis</p>
                           <h3 className="text-xl font-semibold text-slate-800 leading-relaxed">{clothing.description || 'Brak opisu'}</h3>
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Palette className="w-3 h-3" /> Kolor</p>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Palette aria-hidden="true" className="w-3 h-3" /> Kolor</p>
                           <p className="text-slate-700 font-medium capitalize text-lg">{clothing.color || 'Brak koloru'}</p>
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Tags className="w-3 h-3" /> Kategorie</p>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Tags aria-hidden="true" className="w-3 h-3" /> Kategorie</p>
                           <div className="flex flex-wrap gap-2">
                             {clothing.categories && clothing.categories.length > 0 ? (
                               clothing.categories.map((cat, idx) => (
@@ -240,27 +245,29 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                       // TRYB EDYCJI
                       <form className="flex flex-col gap-5">
                         <div>
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Opis</label>
-                          <textarea 
+                          <label htmlFor="edit-description" className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Opis</label>
+                          <textarea
+                            id="edit-description"
                             rows="4"
-                            value={editData.description} 
+                            value={editData.description}
                             onChange={e => setEditData({...editData, description: e.target.value})}
                             className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none shadow-sm transition-shadow"
                             disabled={isSaving}
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kolor</label>
-                          <input 
-                            type="text" 
-                            value={editData.color} 
+                          <label htmlFor="edit-color" className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kolor</label>
+                          <input
+                            id="edit-color"
+                            type="text"
+                            value={editData.color}
                             onChange={e => setEditData({...editData, color: e.target.value})}
                             className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm transition-shadow"
                             disabled={isSaving}
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kategorie</label>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Kategorie</p>
                           <div className="flex flex-wrap gap-2 mb-3">
                             {availableCategories.map(cat => (
                               <button
