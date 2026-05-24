@@ -28,7 +28,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Sprawdzamy, czy dostaliśmy błąd 401 (Wygasły token) i czy zapytanie nie było już ponawiane
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('auth/login/')) {
       originalRequest._retry = true;
 
       try {
