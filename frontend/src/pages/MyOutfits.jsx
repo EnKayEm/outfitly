@@ -2,17 +2,33 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import ClothingCard from '../components/ClothingCard';
+import { useNavigate } from 'react-router-dom';
+import { isAuthenticated } from '../api/auth';
+import { demoOutfits } from '../data/demoData';
+import ClothingDetailsModal from '../components/ClothingDetailsModal';
+
 
 export default function MyOutfits() {
+  
+  const [selectedClothingId, setSelectedClothingId] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [showGuestModal, setShowGuestModal] = useState(false);
   const [outfits, setOutfits] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const outfitsPerPage = 6;
+  const [outfitToDelete, setOutfitToDelete] = useState(null);
+  const navigate = useNavigate();
 
-
+  
   const fetchOutfits = async () => {
+    if (!isAuthenticated()) {
+      setOutfits(demoOutfits);
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await api.get('compositions/');
@@ -27,6 +43,11 @@ export default function MyOutfits() {
 
 // toggle favorite (frontend only)
 const toggleFavorite = (id) => {
+  if (!isAuthenticated()) {
+    setShowGuestModal(true);
+    return;
+  }
+
   setOutfits(prev =>
     prev.map(o =>
       o.id === id ? { ...o, is_favorite: !o.is_favorite } : o
@@ -34,10 +55,17 @@ const toggleFavorite = (id) => {
   );
 };
 
+
 // 🗑 usuwanie (frontend only)
 const handleDelete = (id) => {
+  if (!isAuthenticated()) {
+    setShowGuestModal(true);
+    return;
+  }
+
   setOutfits(prev => prev.filter(o => o.id !== id));
 };
+
 
 const filteredOutfits = outfits.filter(o =>
   showFavorites ? o.is_favorite : true
@@ -65,9 +93,11 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
 
   return (
     <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Moje stylizacje</h1>
+        <h1 className="text-3xl font-bold mb-6 text-left">
+          Moje stylizacje
+        </h1>
 
-        <div className="mb-4 flex gap-3">
+        <div className="mb-6 flex gap-3 justify-start">
         <button
             onClick={() => {
             setShowFavorites(false);
@@ -96,9 +126,31 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
             Ulubione ❤️
         </button>
         </div>
+      
+      {filteredOutfits.length === 0 ? (
+        <div className="flex flex-col items-center mt-10 w-full">
+          
+          {showFavorites && (
+            <div className="text-4xl mb-3 self-center">❤️</div>
+          )}
 
-      {outfits.length === 0 ? (
-        <p className="text-slate-500">Brak zapisanych stylizacji.</p>
+        <p className="text-slate-500 text-lg mb-4 text-left">
+          {showFavorites
+            ? 'Nie masz jeszcze ulubionych stylizacji'
+            : 'Brak zapisanych stylizacji.'}
+        </p>
+
+        {/* ✅ przycisk tylko dla "Wszystkie" */}
+        {!showFavorites && (
+          <button
+            onClick={() => navigate('/style-creator')}
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Przejdź do kreatora stylizacji
+          </button>
+        )}
+
+        </div>
       ) : (
         <>
         <div className="space-y-8">
@@ -112,7 +164,19 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
               {/* jeśli backend zwraca ubrania */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">          
                 {outfit.clothes?.map((item) => (
-                <ClothingCard key={item.id} item={item} />
+                <ClothingCard 
+                  key={item.id} 
+                  item={item} 
+                  onClick={(id) => {
+                    if (!isAuthenticated()) {
+                      setShowGuestModal(true);
+                      return;
+                    }
+
+                    setSelectedClothingId(id);
+                    setIsDetailsModalOpen(true);
+                  }}
+                />
                 ))}
               </div>
 
@@ -126,7 +190,7 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
 
                 {/* 🗑 przycisk usuwania */}
                 <button
-                onClick={() => handleDelete(outfit.id)}
+                onClick={() => setOutfitToDelete(outfit)}
                 className="mt-2 text-red-500 hover:underline text-sm block"
                 >
                 Usuń stylizację
@@ -137,41 +201,147 @@ const totalPages = Math.ceil(filteredOutfits.length / outfitsPerPage);
         </div>
         
 
-        {/* ✅ PAGINACJA */}
-                <div className="flex justify-center mt-8 gap-2">
-                    <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
-                    disabled={currentPage === 1}
-                    >
-                    ←
-                    </button>
+        
+      {/* PAGINACJA */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-8 gap-2">
 
-                    {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                        key={i}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`px-3 py-1 rounded ${
-                        currentPage === i + 1
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-100 hover:bg-slate-200'
-                        }`}
-                    >
-                        {i + 1}
-                    </button>
-                    ))}
+          {/* ← tylko jeśli nie jesteśmy na pierwszej */}
+          {currentPage > 1 && (
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
+            >
+              ←
+            </button>
+          )}
 
-                    <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
-                    disabled={currentPage === totalPages}
-                    >
-                    →
-                    </button>
-                </div>
-                </>
+          {/* NUMERY STRON */}
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
 
+          {/* → tylko jeśli nie jesteśmy na ostatniej */}
+          {currentPage < totalPages && (
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              className="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200"
+            >
+              →
+            </button>
+          )}
+
+        </div>
       )}
+      </>
+      )}
+
+      {/* MODAL USUWANIA */}
+      {outfitToDelete && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          
+          <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6">
+            
+            {/* ❌ X */}
+            <button
+              onClick={() => setOutfitToDelete(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">
+              Usuń stylizację
+            </h2>
+
+            <p className="text-slate-500 mb-6">
+              Czy na pewno chcesz usunąć tę stylizację?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              
+              <button
+                onClick={() => setOutfitToDelete(null)}
+                className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+              >
+                Anuluj
+              </button>
+
+              <button
+                onClick={() => {
+                  handleDelete(outfitToDelete.id);
+                  setOutfitToDelete(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Usuń
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    {showGuestModal && (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+          <button
+            onClick={() => setShowGuestModal(false)}
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          >
+            ✕
+          </button>
+
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">
+            Funkcja dostępna po zalogowaniu
+          </h2>
+
+          <p className="text-slate-500 mb-6">
+            Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+          </p>
+
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => setShowGuestModal(false)}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+            >
+              Zostań w demo
+            </button>
+
+            <button
+              onClick={() => navigate('/login')}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              Zaloguj się
+            </button>
+          </div>
+
+        </div>
+      </div>
+    )}
+
+    <ClothingDetailsModal
+      isOpen={isDetailsModalOpen}
+      onClose={() => {
+        setIsDetailsModalOpen(false);
+        setSelectedClothingId(null);
+      }}
+      clothingId={selectedClothingId}
+    />
+
     </div>
   );
 }
+

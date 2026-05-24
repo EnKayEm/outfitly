@@ -15,14 +15,11 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-
-      <Route element={<ProtectedRoute />}>
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/style-creator" element={<StyleCreator />} /> 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/my-outfits" element={<MyOutfits />} />
-        </Route>
+      <Route element={<Layout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/style-creator" element={<StyleCreator />} /> 
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/my-outfits" element={<MyOutfits />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -48,19 +48,18 @@ const itemDate = item.creation_date;
           Kolor: {item.color || "Nie podano"}
         </p>
         
-        <div className="flex flex-wrap gap-1 mt-2">
-          {validCategories.length > 0 ? (
-            validCategories.map((cat, idx) => (
-              <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-100">
+        {validCategories.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {validCategories.map((cat, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-100"
+              >
                 {cat}
               </span>
-            ))
-          ) : (
-            <span className="px-2 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-medium border border-slate-200">
-              Brak kategorii
-            </span>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       {children}
     </div>

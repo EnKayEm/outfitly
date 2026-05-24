@@ -85,17 +85,26 @@ export default function Login() {
           >
             {loading ? 'Logowanie...' : 'Zaloguj się'}
           </button>
+          
+          <button
+            type="button"
+            onClick={() => navigate('/my-outfits')}
+            className="w-full mt-2 bg-slate-100 text-slate-700 py-2 rounded-lg hover:bg-slate-200 transition"
+          >
+            Wypróbuj demo
+          </button>
+
         </form>
         <div className="flex justify-between text-sm mt-4">
           <span
-            className="text-blue-600 cursor-pointer"
+            className="text-blue-600 hover:underline cursor-pointer transition"
             onClick={() => navigate('/register')}
           >
             Rejestracja
           </span>
-
+          
           <span
-            className="text-blue-600 cursor-pointer"
+            className="text-blue-600 hover:underline cursor-pointer transition"
             onClick={() => navigate('/reset-password')}
           >
             Zapomniałeś hasła?

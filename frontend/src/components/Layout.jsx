@@ -1,6 +1,7 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { Shirt, Sparkles, LayoutGrid, LogOut } from 'lucide-react';
+import { isAuthenticated } from '../api/auth';
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -24,15 +25,32 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+
+    {/* TRYB DEMO */}
+    {!isAuthenticated() && (
+      <div className="bg-yellow-50 text-yellow-700 text-center text-sm py-2 border-b flex justify-center items-center gap-2">
+        <span>Korzystasz z trybu demo —</span>
+
+        <button
+          onClick={() => navigate('/login')}
+          className="font-semibold underline hover:text-yellow-900 transition"
+        >
+          zaloguj się,
+        </button>
+
+        <span> aby zapisywać dane</span>
+      </div>
+    )}
+
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap sm:flex-nowrap justify-between items-center gap-4">
           
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 flex-nowrap whitespace-nowrap">
             <Link to="/" className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Shirt className="w-7 h-7 text-blue-600" strokeWidth={2.5} /> Outfitly
             </Link>
             
-            <nav className="flex gap-2">
+            <nav className="flex gap-2 flex-nowrap whitespace-nowrap">
               <NavLink 
                 to="/dashboard" 
                 className={({ isActive }) => `px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
@@ -65,22 +83,33 @@ export default function Layout() {
               <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
                 S
               </div>
-              <span className="text-sm font-medium text-slate-700 hidden sm:block pr-1">Superuser</span>
+              {isAuthenticated() ? (
+                <span className="text-sm font-medium text-slate-700 hidden sm:block pr-1">
+                  Superuser
+                </span>
+              ) : (
+                <span className="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded">
+                  Niezalogowany
+                </span>
+              )}
             </div>
 
-            <button 
-              onClick={handleLogout}
-              className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
-              title="Wyloguj się"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Wyloguj</span>
-            </button>
+            {isAuthenticated() && (
+              <button 
+                onClick={handleLogout}
+                className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
+                title="Wyloguj się"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Wyloguj</span>
+              </button>
+            )}
+
           </div>
 
         </div>
       </header>
-      <main className="flex-grow max-w-7xl w-auto mx-auto px-4 py-8">
+      <main className="flex-grow max-w-7xl px-4 py-8">
         <Outlet />
       </main>
     </div>
