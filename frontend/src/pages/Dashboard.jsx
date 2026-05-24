@@ -4,19 +4,32 @@ import ClothingCard from '../components/ClothingCard';
 import ClothingSkeleton from '../components/ClothingSkeleton';
 import AddClothingModal from '../components/AddClothingModal';
 import ClothingDetailsModal from '../components/ClothingDetailsModal';
-import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter } from 'lucide-react';
-import { Check } from 'lucide-react';
+import { Shirt, Plus, Search, Filter, ArrowUpDown, Palette, ListFilter, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { isAuthenticated } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { demoClothes } from '../data/demoData';
+
 
 export default function Dashboard() {
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const navigate = useNavigate();
   const [clothes, setClothes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+
 
   // Stany dla filtrów i sortowania
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]); // Nowy stan dla kolorów
   const [sortBy, setSortBy] = useState('newest');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategories, selectedColors, sortBy]);
 
   // Stany dla otwarcia dropdownów
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -35,7 +48,9 @@ export default function Dashboard() {
 
   const sortOptions = [
     { id: 'newest', label: 'Najnowsze' },
-    { id: 'oldest', label: 'Najstarsze' }
+    { id: 'oldest', label: 'Najstarsze' },
+    { id: 'color_asc', label: 'Kolor (A-Z)' },
+    { id: 'color_desc', label: 'Kolor (Z-A)' }
   ];
 
   const FancyCheck = ({ isChecked }) => (
@@ -50,6 +65,12 @@ export default function Dashboard() {
 
 useEffect(() => {
   const fetchClothes = async () => {
+    if (!isAuthenticated()) {
+      setClothes(demoClothes);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await api.get('clothes/');
@@ -60,6 +81,7 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
+
   fetchClothes();
 }, [refreshTrigger]);
 
@@ -128,7 +150,36 @@ useEffect(() => {
     }
 
     // 4. Sortowanie
-    result.sort((a, b) => (sortBy === 'newest' ? b.id - a.id : a.id - b.id));
+    result.sort((a, b) => {
+      // Pobieramy daty, używając poprawnego klucza z backendu (creation_date)
+      const dateA = new Date(a.creation_date || 0).getTime();
+      const dateB = new Date(b.creation_date || 0).getTime();
+      const colorA = a.color || "";
+      const colorB = b.color || "";
+
+      switch (sortBy) {
+        case 'newest':
+          // Od najnowszych (jeśli daty równe, sortuje po kolorze A-Z)
+          if (dateA !== dateB) return dateB - dateA;
+          return colorA.localeCompare(colorB);
+          
+        case 'oldest':
+          // Od najstarszych
+          if (dateA !== dateB) return dateA - dateB;
+          return colorA.localeCompare(colorB);
+          
+        case 'color_asc':
+          // Kolor alfabetycznie A-Z
+          return colorA.localeCompare(colorB);
+          
+        case 'color_desc':
+          // Kolor alfabetycznie Z-A
+          return colorB.localeCompare(colorA);
+          
+        default:
+          return 0;
+      }
+    });
 
     return result;
   }, [clothes, searchQuery, selectedCategories, selectedColors, sortBy]);
@@ -143,19 +194,59 @@ useEffect(() => {
 
   const activeSortLabel = sortOptions.find(opt => opt.id === sortBy)?.label || 'Sortuj';
 
+  const totalPages = Math.ceil(processedClothes.length / itemsPerPage);
+  const currentClothes = processedClothes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Zabezpieczenie przed "pustą stroną" po usunięciu elementów
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const getPageNumbers = () => {
+      const pages = [];
+      const maxVisible = 3; // Ile stron pokazywać wokół obecnej
+
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1); // Zawsze pierwsza
+
+        if (currentPage > 3) pages.push('...');
+
+        let start = Math.max(2, currentPage - 1);
+        let end = Math.min(totalPages - 1, currentPage + 1);
+
+        // Korekta okienka przy końcach
+        if (currentPage <= 3) end = 4;
+        if (currentPage >= totalPages - 2) start = totalPages - 3;
+
+        for (let i = start; i <= end; i++) pages.push(i);
+
+        if (currentPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages); // Zawsze ostatnia
+      }
+      return pages;
+    };
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          Twoja Szafa <Shirt className="text-blue-600 w-6 h-6" />
+          Twoja Szafa <Shirt aria-hidden="true" className="text-blue-600 w-6 h-6" />
         </h1>
         
         <div className="flex flex-wrap w-full lg:w-auto gap-3">
           {/* Szukajka z ikoną */}
           <div className="relative flex-1 min-w-[150px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
+              aria-label="Wyszukaj ubranie"
               placeholder="Szukaj po nazwie..."
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               value={searchQuery}
@@ -165,12 +256,14 @@ useEffect(() => {
 
           {/* DROPDOWN KATEGORII */}
           <div className="relative" ref={filterRef}>
-            <button 
+            <button
               onClick={() => {
                 setIsFilterOpen(!isFilterOpen);
                 setIsColorOpen(false);
                 setIsSortOpen(false);
               }}
+              aria-haspopup="listbox"
+              aria-expanded={isFilterOpen}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
                 selectedCategories.length > 0 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white'
               }`}
@@ -213,12 +306,14 @@ useEffect(() => {
 
           {/* DROPDOWN KOLORÓW */}
           <div className="relative" ref={colorRef}>
-            <button 
+            <button
               onClick={() => {
                 setIsColorOpen(!isColorOpen);
                 setIsFilterOpen(false);
                 setIsSortOpen(false);
               }}
+              aria-haspopup="listbox"
+              aria-expanded={isColorOpen}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors h-full ${
                 selectedColors.length > 0 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white'
               }`}
@@ -261,19 +356,21 @@ useEffect(() => {
 
           {/* DROPDOWN SORTOWANIA */}
           <div className="relative" ref={sortRef}>
-            <button 
+            <button
               onClick={() => {
                 setIsSortOpen(!isSortOpen);
                 setIsFilterOpen(false);
                 setIsColorOpen(false);
               }}
+              aria-haspopup="listbox"
+              aria-expanded={isSortOpen}
               className="px-4 py-2 border border-slate-200 bg-white rounded-lg flex items-center justify-between gap-2 transition-colors h-full hover:bg-slate-50 min-w-[190px]"
             >
               <span className="font-medium text-slate-800 truncate">
                 <span className="text-slate-500 font-normal mr-1">Sortuj:</span> 
                 {activeSortLabel}
               </span>
-              <span className={`text-[10px] text-slate-400 transition-transform ml-1 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
+              <span className={`text-[10px] text-slate-900 transition-transform ml-1 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
             {isSortOpen && (
@@ -298,11 +395,18 @@ useEffect(() => {
             )}
           </div>
 
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
+          <button
+            onClick={() => {
+              if (!isAuthenticated()) {
+                setShowGuestModal(true);
+                return;
+              }
+              setIsAddModalOpen(true);
+            }}
+
             className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
-            <Plus className="w-5 h-5" /> Dodaj Ubranie
+            <Plus aria-hidden="true" className="w-5 h-5" /> Dodaj Ubranie
           </button>
         </div>
       </div>
@@ -310,23 +414,84 @@ useEffect(() => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, idx) => <ClothingSkeleton key={idx} />)
-        ) : processedClothes.length > 0 ? (
-            processedClothes.map(item => (
+        ) : currentClothes.length > 0 ? ( // ZMIANA: używamy currentClothes
+            currentClothes.map(item => (
               <ClothingCard 
                 key={item.id} 
                 item={item} 
                 onClick={(id) => {
+                  if (!isAuthenticated()) {
+                    setShowGuestModal(true);
+                    return;
+                  }
+
                   setSelectedClothingId(id);
                   setIsDetailsModalOpen(true);
                 }}
               />
           ))
         ) : (
-          <div className="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-100 rounded-2xl">
-            Nie znaleziono ubrań dla podanych kryteriów.
+          <div className="col-span-full min-h-[60vh] flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-slate-100 rounded-2xl">
+            {clothes.length === 0 ? (
+              <>
+                <Shirt className="w-10 h-10 mb-3 text-slate-300" />
+                <p className="text-lg">Twoja szafa jest pusta.</p>
+                <p className="text-sm text-slate-400 mt-1">Dodaj swoje pierwsze ubranie, klikając przycisk powyżej.</p>
+              </>
+            ) : (
+              <>
+                <Search className="w-10 h-10 mb-3 text-slate-300" />
+                <p className="text-lg">Nie znaleziono ubrań dla podanych kryteriów.</p>
+              </>
+            )}
           </div>
         )}
       </div>
+      {/* Paginacja - pojawia się tylko, gdy jest więcej niż 1 strona */}
+{totalPages > 1 && (
+  <div className="flex flex-wrap justify-center items-center gap-2 mt-10 mb-6">
+    {/* Przycisk Poprzednia */}
+    <button 
+      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 flex items-center justify-center"
+    >
+      <span className="sr-only">Poprzednia</span>
+      <ChevronLeft className="w-5 h-5" />
+    </button>
+
+    {/* Numery stron */}
+    <div className="flex items-center gap-1">
+      {getPageNumbers().map((page, index) => (
+        page === '...' ? (
+          <span key={`dots-${index}`} className="px-3 py-2 text-slate-400">...</span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`w-10 h-10 rounded-lg text-sm font-semibold transition-all ${
+              currentPage === page 
+                ? 'bg-blue-600 text-white shadow-blue-200 shadow-lg' 
+                : 'text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200'
+            }`}
+          >
+            {page}
+          </button>
+        )
+      ))}
+    </div>
+
+    {/* Przycisk Następna */}
+    <button 
+      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-slate-600 flex items-center justify-center"
+    >
+      <span className="sr-only">Następna</span>
+      <ChevronRight className="w-5 h-5" />
+    </button>
+  </div>
+)}
       <AddClothingModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
@@ -343,6 +508,45 @@ useEffect(() => {
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
         availableCategories={availableCategories} 
       />
+      
+      {showGuestModal && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+                  <button
+                    onClick={() => setShowGuestModal(false)}
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+                  >
+                    ✕
+                  </button>
+
+                  <h2 className="text-xl font-semibold text-slate-800 mb-2">
+                    Funkcja dostępna po zalogowaniu
+                  </h2>
+
+                  <p className="text-slate-500 mb-6">
+                    Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+                  </p>
+
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={() => setShowGuestModal(false)}
+                      className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                    >
+                      Zostań w demo
+                    </button>
+
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                    >
+                      Zaloguj się
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            )}
     </div>
   );
 }

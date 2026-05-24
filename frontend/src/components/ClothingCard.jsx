@@ -1,19 +1,44 @@
+import React from 'react';
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pl-PL', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
 export default function ClothingCard({ item, onClick, children }) {
   const validCategories = item.categories 
     ? item.categories.filter(cat => cat && cat.trim() !== '') 
     : [];
 
+const itemDate = item.creation_date;
+
   return (
-      <div 
-        onClick={() => onClick(item.id)}
-        className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200 h-full"
-      >     
-      <div className="aspect-square w-full bg-slate-50 overflow-hidden">
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={item.description || 'Ubranie'}
+      onClick={() => onClick(item.id)}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick(item.id)}
+      className="group relative bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-200 h-full"
+    >     
+      <div className="aspect-square w-full bg-slate-50 overflow-hidden relative">
         <img
           src={item.image_url}
           alt={item.description || "Ubranie"}
           className="w-full h-full object-cover"
         />
+        
+        {/* Odznaka z datą */}
+        {itemDate && (
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md border border-slate-700">
+            {formatDate(itemDate)}
+          </div>
+        )}
       </div>
       
       <div className="p-4 flex-1 flex flex-col">
@@ -27,19 +52,18 @@ export default function ClothingCard({ item, onClick, children }) {
           Kolor: {item.color || "Nie podano"}
         </p>
         
-        <div className="flex flex-wrap gap-1 mt-2">
-          {validCategories.length > 0 ? (
-            validCategories.map((cat, idx) => (
-              <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-100">
+        {validCategories.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {validCategories.map((cat, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-100"
+              >
                 {cat}
               </span>
-            ))
-          ) : (
-            <span className="px-2 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-medium border border-slate-200">
-              Brak kategorii
-            </span>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       {children}
     </div>

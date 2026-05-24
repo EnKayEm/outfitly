@@ -3,9 +3,14 @@ import api from '../api/axiosConfig';
 import axios from 'axios';
 import { Wand2, Sparkles, X, RotateCw, PencilRuler, Trash2, Save, Plus } from 'lucide-react';
 import ClothingCard from '../components/ClothingCard';
-import SwapClothingModal from '../components/SwapClothingModal'; 
+import SwapClothingModal from '../components/SwapClothingModal';
+import { isAuthenticated } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { demoClothes } from '../data/demoData';
 
 export default function StyleCreator() {
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const navigate = useNavigate();
   const [occasion, setOccasion] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
@@ -23,6 +28,11 @@ export default function StyleCreator() {
   const popularOccasions = ['Wesele', 'Praca w biurze', 'Randka', 'Spacer', 'Wyjście ze znajomymi'];
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      setClothes(demoClothes);
+      return;
+    }
+
     api.get('clothes/')
       .then(response => setClothes(response.data))
       .catch(err => console.error("Błąd pobierania szafy:", err));
@@ -30,7 +40,16 @@ export default function StyleCreator() {
 
   const handleGenerate = async (e, specificOccasion = occasion) => {
     e?.preventDefault();
-    if (!specificOccasion.trim()) return;
+
+    if (!specificOccasion.trim()) {
+        setError("Podaj okazję");
+        return;
+      }
+    
+    if (!isAuthenticated()) {
+      setShowGuestModal(true);
+      return;
+    }
 
     setIsGenerating(true);
     setError(null);
@@ -104,8 +123,26 @@ export default function StyleCreator() {
       };
     });
   };
+  
+  const toggleFavorite = async (id) => {
+    if (!isAuthenticated()) {
+      setShowGuestModal(true);
+      return;
+    }
+
+    try {
+      await api.post(`compositions/${id}/favorite/`);
+    } catch (err) {
+      console.error('Błąd fav', err);
+    }
+  };
 
   const handleSaveOutfit = async () => {
+    if (!isAuthenticated()) {
+      setShowGuestModal(true);
+      return;
+    }
+
     if (!generatedData || !generatedData.suggested_outfit_ids || generatedData.suggested_outfit_ids.length === 0) {
       setError("Nie można zapisać pustego zestawu.");
       return;
@@ -156,6 +193,46 @@ export default function StyleCreator() {
         <button onClick={handleCancel} className="px-6 py-2 border-2 border-red-200 text-red-500 font-medium rounded-full hover:bg-red-50 hover:border-red-300 transition-colors flex items-center gap-2">
           <X className="w-4 h-4" /> Przerwij wyszukiwanie
         </button>
+        
+        {showGuestModal && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+              <button
+                onClick={() => setShowGuestModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-xl font-semibold text-slate-800 mb-2">
+                Funkcja dostępna po zalogowaniu
+              </h2>
+
+              <p className="text-slate-500 mb-6">
+                Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+              </p>
+
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => setShowGuestModal(false)}
+                  className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                >
+                  Zostań w demo
+                </button>
+
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                  Zaloguj się
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </div>
     );
   }
@@ -205,7 +282,7 @@ export default function StyleCreator() {
               className="flex-1 md:flex-none px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold shadow-md shadow-purple-200 hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Save className="w-4 h-4" /> 
-              {isSaving ? 'Zapisywanie...' : (successMessage ? 'Zapisano!' : 'Zapisz stylizację')}
+              {isSaving ? 'Zapisywanie...' : (successMessage ? 'Zapisano!' : 'Zapisz do kolekcji')}
             </button>
           </div>
         </div>
@@ -230,7 +307,11 @@ export default function StyleCreator() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRemoveItem(item.id); 
+                      if (!isAuthenticated()) {
+                        setShowGuestModal(true);
+                        return;
+                      }
+                      handleRemoveItem(item.id);
                     }}
                     className="group/btn-rm absolute top-3 left-3 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm border border-slate-200 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:border-red-300 transition-all z-10"
                   >
@@ -243,7 +324,11 @@ export default function StyleCreator() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      openSwapModal(item.id); 
+                      if (!isAuthenticated()) {
+                        setShowGuestModal(true);
+                        return;
+                      }
+                      openSwapModal(item.id);
                     }}
                     className="group/btn absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm border border-slate-200 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-purple-600 hover:border-purple-300 transition-all z-10"
                   >
@@ -253,11 +338,28 @@ export default function StyleCreator() {
                     </span>
                   </button>
 
+                  
+
                 </ClothingCard>
               ))}
 
-              <div 
-                onClick={() => setIsAddModalOpen(true)}
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Dodaj ubranie do stylizacji"
+                onClick={() => {
+                  if (!isAuthenticated()) {
+                    setShowGuestModal(true);
+                    return;
+                  }
+                  setIsAddModalOpen(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    if (!isAuthenticated()) { setShowGuestModal(true); return; }
+                    setIsAddModalOpen(true);
+                  }
+                }}
                 className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-3xl p-6 cursor-pointer hover:bg-slate-50 hover:border-purple-400 transition-all min-h-[250px] group"
               >
                 <div className="w-16 h-16 bg-slate-100 group-hover:bg-purple-100 rounded-full flex items-center justify-center mb-4 transition-colors">
@@ -294,6 +396,43 @@ export default function StyleCreator() {
           mode="add"
         /> 
 
+        {showGuestModal && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+              <button
+                onClick={() => setShowGuestModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-xl font-semibold text-slate-800 mb-2">
+                Funkcja dostępna po zalogowaniu
+              </h2>
+
+              <p className="text-slate-500 mb-6">
+                Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+              </p>
+
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => setShowGuestModal(false)}
+                  className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                >
+                  Zostań w demo
+                </button>
+
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                  Zaloguj się
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -347,6 +486,43 @@ export default function StyleCreator() {
           </form>
         </div>
       </div>
+      {showGuestModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-[400px] p-6 text-center">
+
+            <button
+              onClick={() => setShowGuestModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">
+              Funkcja dostępna po zalogowaniu
+            </h2>
+
+            <p className="text-slate-500 mb-6">
+              Jesteś w trybie demo. Zaloguj się, aby korzystać z tej funkcji.
+            </p>
+
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setShowGuestModal(false)}
+                className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+              >
+                Zostań w demo
+              </button>
+
+              <button
+                onClick={() => navigate('/login')}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Zaloguj się
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

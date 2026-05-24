@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { Bot, Camera, Sparkles, PencilLine, Save, X } from 'lucide-react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export default function AddClothingModal({ isOpen, onClose, onSuccess, availableCategories = [] }) {
   const [file, setFile] = useState(null);
@@ -17,6 +18,8 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess, available
   const [customCategory, setCustomCategory] = useState('');
   
   const fileInputRef = useRef(null);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, isOpen);
 
   // Czyszczenie URL-a z pamięci przeglądarki
   useEffect(() => {
@@ -182,16 +185,16 @@ export default function AddClothingModal({ isOpen, onClose, onSuccess, available
   };
 
 return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh] md:h-[650px] overflow-hidden">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
+      <div ref={modalRef} className="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh] md:h-[650px] overflow-hidden">
+
         <div className="flex justify-between items-center p-4 border-b border-slate-100 shrink-0">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            {isManualMode ? <PencilLine className="w-5 h-5 text-slate-600" /> : <Bot className="w-5 h-5 text-blue-600" />}
+          <h2 id="add-modal-title" className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            {isManualMode ? <PencilLine aria-hidden="true" className="w-5 h-5 text-slate-600" /> : <Bot aria-hidden="true" className="w-5 h-5 text-blue-600" />}
             {isManualMode ? (tempId ? 'Zweryfikuj dane od AI' : 'Dodaj ubranie ręcznie') : 'Zeskanuj ubranie AI'}
           </h2>
-          <button onClick={handleClose} disabled={isAnalyzing} className="text-slate-400 hover:text-slate-600 disabled:opacity-50">
-            <X className="w-5 h-5" />
+          <button onClick={handleClose} disabled={isAnalyzing} aria-label="Zamknij okno" className="text-slate-400 hover:text-slate-600 disabled:opacity-50">
+            <X aria-hidden="true" className="w-5 h-5" />
           </button>
         </div>
 
@@ -201,8 +204,12 @@ return (
           <div className="w-full md:w-1/2 flex-shrink-0 md:h-full flex flex-col">
             <div className="flex-1 min-h-[300px]">
               {!preview ? (
-                <div 
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Wybierz zdjęcie ubrania"
                   onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current?.click()}
                   className="border-2 border-dashed border-slate-300 rounded-xl p-8 h-full flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-colors"
                 >
                   <Camera className="w-12 h-12 mx-auto mb-3 text-slate-400" strokeWidth={1.5} />
@@ -233,11 +240,12 @@ return (
                   )}
 
                   {!isAnalyzing && (
-                    <button 
+                    <button
                       onClick={handleRemoveImage}
+                      aria-label="Usuń zdjęcie"
                       className="absolute top-3 right-3 bg-red-500/90 backdrop-blur-sm text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors z-20"
                     >
-                      ✕
+                      <span aria-hidden="true">✕</span>
                     </button>
                   )}
                 </div>
@@ -265,33 +273,35 @@ return (
               <form id="manual-form" onSubmit={handleSave} className="flex flex-col gap-4 flex-1">
                 
                 <div className="flex flex-col gap-1 shrink-0">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Opis ubrania</label>
-                  <textarea 
-                    required 
+                  <label htmlFor="add-description" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Opis ubrania</label>
+                  <textarea
+                    id="add-description"
+                    required
                     rows="4"
-                    placeholder="np. Zielona czapka zimowa z pomponem" 
-                    className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none border-slate-200 resize-none text-sm transition-shadow shrink-0" 
-                    value={manualData.description} 
-                    onChange={e => setManualData({...manualData, description: e.target.value})} 
+                    placeholder="np. Zielona czapka zimowa z pomponem"
+                    className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none border-slate-200 resize-none text-sm transition-shadow shrink-0"
+                    value={manualData.description}
+                    onChange={e => setManualData({...manualData, description: e.target.value})}
                     disabled={isAnalyzing}
                   />
                 </div>
-                
+
                 <div className="flex flex-col gap-1 shrink-0">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kolor dominujący</label>
-                  <input 
-                    required 
-                    type="text" 
-                    placeholder="np. Zielony" 
-                    className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none border-slate-200 text-sm transition-shadow shrink-0" 
-                    value={manualData.color} 
-                    onChange={e => setManualData({...manualData, color: e.target.value})} 
+                  <label htmlFor="add-color" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kolor dominujący</label>
+                  <input
+                    id="add-color"
+                    required
+                    type="text"
+                    placeholder="np. Zielony"
+                    className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none border-slate-200 text-sm transition-shadow shrink-0"
+                    value={manualData.color}
+                    onChange={e => setManualData({...manualData, color: e.target.value})}
                     disabled={isAnalyzing}
                   />
                 </div>
 
                 <div className="flex flex-col gap-2 mt-2 shrink-0 pb-4">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kategorie i tagi</label>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kategorie i tagi</p>
                    
                   <div className="flex flex-wrap gap-2">
                     {availableCategories.map(cat => (

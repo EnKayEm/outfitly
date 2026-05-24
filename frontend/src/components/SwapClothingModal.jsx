@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ArrowLeftRight, SearchX, Search, Filter, Palette, Check, PlusCircle } from 'lucide-react';
 import ClothingCard from './ClothingCard';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
   const FancyCheckPurple = ({ isChecked }) => (
     <div className={`w-5 h-5 rounded-md border-2 transition-all duration-150 flex items-center justify-center shrink-0 ${
@@ -18,6 +19,9 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
   const [selectedColors, setSelectedColors] = useState([]);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,37 +63,38 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 relative">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="swap-modal-title">
+      <div ref={modalRef} className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 relative">
+
         {(isCategoryDropdownOpen || isColorDropdownOpen) && (
-          <div className="fixed inset-0 z-10" onClick={() => { setIsCategoryDropdownOpen(false); setIsColorDropdownOpen(false); }}></div>
+          <div className="fixed inset-0 z-10" aria-hidden="true" onClick={() => { setIsCategoryDropdownOpen(false); setIsColorDropdownOpen(false); }}></div>
         )}
 
         <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50 shrink-0 z-20 relative">
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <h2 id="swap-modal-title" className="text-xl font-bold text-slate-800 flex items-center gap-2">
             {mode === 'swap' ? (
               <>
-                <ArrowLeftRight className="w-5 h-5 text-purple-600" />
+                <ArrowLeftRight aria-hidden="true" className="w-5 h-5 text-purple-600" />
                 Wybierz ubranie na podmianę
               </>
             ) : (
               <>
-                <PlusCircle className="w-5 h-5 text-purple-600" />
+                <PlusCircle aria-hidden="true" className="w-5 h-5 text-purple-600" />
                 Wybierz ubranie do dodania
               </>
             )}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-200 border border-slate-200 p-2 rounded-full transition-colors shadow-sm">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} aria-label="Zamknij okno" className="text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-200 border border-slate-200 p-2 rounded-full transition-colors shadow-sm">
+            <X aria-hidden="true" className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-4 border-b border-slate-100 bg-white flex flex-wrap gap-3 shrink-0 shadow-sm z-20 relative">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
+              aria-label="Szukaj ubrania po nazwie"
               placeholder="Szukaj po nazwie..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -99,12 +104,14 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
 
           {/* Dropdown Kategorii  */}
           <div className="relative min-w-[190px]">
-            <button 
+            <button
               onClick={() => { setIsCategoryDropdownOpen(!isCategoryDropdownOpen); setIsColorDropdownOpen(false); }}
+              aria-haspopup="listbox"
+              aria-expanded={isCategoryDropdownOpen}
               className={`w-full flex items-center justify-between pl-3 pr-4 py-2.5 border rounded-xl text-sm font-medium transition-colors ${selectedCategories.length > 0 ? 'border-purple-400 bg-purple-50 text-purple-700 shadow-inner' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'}`}
             >
               <span className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
+                <Filter aria-hidden="true" className="w-4 h-4" />
                 {selectedCategories.length > 0 ? `Kategorie (${selectedCategories.length})` : 'Wszystkie kategorie'}
               </span>
             </button>
@@ -124,12 +131,14 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
 
           {/* Dropdown Kolorów */}
           <div className="relative min-w-[180px]">
-            <button 
+            <button
               onClick={() => { setIsColorDropdownOpen(!isColorDropdownOpen); setIsCategoryDropdownOpen(false); }}
+              aria-haspopup="listbox"
+              aria-expanded={isColorDropdownOpen}
               className={`w-full flex items-center justify-between pl-3 pr-4 py-2.5 border rounded-xl text-sm font-medium transition-colors ${selectedColors.length > 0 ? 'border-purple-400 bg-purple-50 text-purple-700 shadow-inner' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'}`}
             >
               <span className="flex items-center gap-2">
-                <Palette className="w-4 h-4" />
+                <Palette aria-hidden="true" className="w-4 h-4" />
                 {selectedColors.length > 0 ? `Kolory (${selectedColors.length})` : 'Wszystkie kolory'}
               </span>
             </button>
@@ -158,7 +167,15 @@ export default function SwapClothingModal({ isOpen, onClose, clothes, currentOut
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {filteredClothes.map(item => (
-                <div key={item.id} className="relative group cursor-pointer h-full" onClick={() => onSwap(item.id)}>
+                <div
+                  key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Wybierz: ${item.description || 'ubranie'}`}
+                  className="relative group cursor-pointer h-full"
+                  onClick={() => onSwap(item.id)}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSwap(item.id)}
+                >
                   <div className="absolute -inset-1 rounded-2xl border-4 border-transparent group-hover:border-purple-500 group-hover:bg-purple-500/5 transition-all duration-200 z-10 group-hover:-translate-y-1 shadow-purple-100 group-hover:shadow-xl group-hover:shadow-purple-200/50"></div>
                   
                   <div className="relative group-hover:-translate-y-1 transition-transform duration-200 ease-out z-0 h-full">
