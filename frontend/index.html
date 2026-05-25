@@ -7,7 +7,23 @@
     <title>Outfitly</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="adblock-fallback" style="min-height:100vh;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:24px;font-family:sans-serif;">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;max-width:460px;width:100%;padding:32px;display:flex;flex-direction:column;gap:20px;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span style="font-size:18px;font-weight:700;color:#1e293b;">Nie można załadować aplikacji</span>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;font-size:14px;color:#78350f;line-height:1.7;">
+            <p style="font-weight:600;margin:0 0 8px;">Przyczyną może być aktywny bloker reklam lub rozszerzenie przeglądarki.</p>
+            <p style="margin:0;">Niektóre blokery (np. Brave Shields, uBlock Origin) mogą blokować zasoby niezbędne do działania aplikacji. Spróbuj wyłączyć je dla tej strony i odświeżyć.</p>
+          </div>
+          <button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+            Odśwież stronę
+          </button>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
