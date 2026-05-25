@@ -33,7 +33,6 @@ class RegisterView(APIView):
                 email=email,
                 password=password
             )
-            # Wcięcie musi być identyczne jak dla 'user = ...' powyżej!
             return Response({"message": "Użytkownik zarejestrowany!"}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
