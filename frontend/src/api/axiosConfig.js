@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 // 1. Tworzymy główną instancję z bazowym adresem API Backendowego
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: `${API_URL}/api/`,
 });
 
 // 2. REQUEST INTERCEPTOR - Uruchamia się przed każdym wysłaniem zapytania
@@ -26,14 +28,14 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Sprawdzamy, czy dostaliśmy błąd 401 (Wygasły token) i czy zapytanie nie było już ponawiane
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('auth/login/')) {
       originalRequest._retry = true;
 
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         
         // Próba odświeżenia tokena uderzając w endpoint /auth/refresh/
-        const response = await axios.post('http://localhost:8000/api/auth/refresh/', {
+        const response = await axios.post(`${API_URL}/api/auth/refresh/`, {
           refresh: refreshToken,
         });
 
