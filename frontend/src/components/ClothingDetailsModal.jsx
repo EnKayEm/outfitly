@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
-import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags, Calendar } from 'lucide-react';
+import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags, Calendar, Heart } from 'lucide-react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSuccess, availableCategories = [] }) {
@@ -13,6 +13,8 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
   const [isSaving, setIsSaving] = useState(false);
   const [editData, setEditData] = useState({ description: '', color: '', categories: [] });
   const [customCategory, setCustomCategory] = useState('');
+
+  const [isFavorite, setIsFavorite] = useState(false);
 
   // Stany dla usuwania
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -41,6 +43,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             }
             
             setClothing(data);
+            setIsFavorite(data.is_favorite || false);
         } catch (err) {
             setError('Nie udało się pobrać szczegółów ubrania.');
         } finally {
@@ -54,6 +57,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
         setClothing(null);
         setIsEditing(false);
         setIsDeleteConfirmOpen(false);
+        setIsFavorite(false);
         };
     }, [isOpen, clothingId]);
 
@@ -213,9 +217,22 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                               <Calendar aria-hidden="true" className="w-3 h-3" /> Data dodania
                             </p>
-                            <p className="text-slate-700 font-medium text-lg">
-                              {formatDate(clothing.creation_date)}
-                            </p>
+                            <div className="flex items-center justify-between">
+                              <p className="text-slate-700 font-medium text-lg">
+                                {formatDate(clothing.creation_date)}
+                              </p>
+                              <button
+                                onClick={() => setIsFavorite(prev => !prev)}
+                                title={isFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
+                                className={`p-2 rounded-lg transition-colors ${
+                                  isFavorite
+                                    ? 'text-pink-500 hover:bg-pink-50'
+                                    : 'text-slate-300 hover:text-pink-400 hover:bg-pink-50'
+                                }`}
+                              >
+                                <Heart className="w-5 h-5" fill={isFavorite ? 'currentColor' : 'none'} />
+                              </button>
+                            </div>
                           </div>
                         )}
                         <div>
