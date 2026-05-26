@@ -1,12 +1,41 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
 from database.models import Cloth, Category, OutfitlyUser, Composition
 from .ai_service import analyze_cloth_image
 from .ai_service import generate_stylization
+import requests
+from django.core.files.temp import NamedTemporaryFile
+
+User = get_user_model()
+
+# Endpoint do rejestracji użytkownika - POST /api/auth/register/
+class RegisterView(APIView):
+    def post(self, request):
+        login = request.data.get('login')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not login or not email or not password:
+            return Response({"error": "Musisz podać login, email i hasło!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(login=login).exists():
+            return Response({"login": "Nazwa użytkownika już istnieje"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.create_user(
+                login=login,
+                email=email,
+                password=password
+            )
+            return Response({"message": "Użytkownik zarejestrowany!"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 # Endpoint do wylogowania użytkownika - POST /api/logout/
 @api_view(['POST'])
@@ -31,7 +60,13 @@ def upload_and_analyze_cloth(request):
     user = request.user
 
     cloth = Cloth.objects.create(user=user, image=image_file)
-    ai_data = analyze_cloth_image(cloth.image.path)
+    response = requests.get(cloth.image.url)
+    
+    with NamedTemporaryFile(delete=True) as tmp_file:
+        tmp_file.write(response.content)
+        tmp_file.flush()
+
+        ai_data = analyze_cloth_image(tmp_file.name)
 
     if ai_data.get('error') == 'not_clothing':
         cloth.delete()
@@ -166,7 +201,7 @@ def get_user_clothes(request):
     if sort_by not in allowed_sort_fields:
         sort_by = '-creation_date'
 
-    clothes = Cloth.objects.filter(user=request.user).order_by(sort_by).distinct()
+    clothes = Cloth.objects.filter(user=request.user).prefetch_related('category_set').order_by(sort_by).distinct()
     
     data = []
     for cloth in clothes:
