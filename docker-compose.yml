@@ -19,7 +19,8 @@ services:
     build: ./backend
     volumes:
       - ./backend:/app
-      - media_data:/app/media 
+      - /usr/local/lib/python3.13/site-packages
+      - media_data:/app/media
     ports:
       - "8000:8000"
     env_file:
