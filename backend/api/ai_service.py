@@ -60,6 +60,8 @@ def generate_stylization(wardrobe_data, occasion):
     który będzie zawierał tablicę (listę) numerów ID wybranych ubrań.
     Przykład poprawnej odpowiedzi: {{"outfit_ids": [1, 4, 7]}}
 
+    STYLIZACJA MUSI BYĆ SPÓJNA I PASOWAĆ DO OKAZJI!! MUSI ZAWIERAĆ ODZIEŻ, OBUWIE I DODATKI (JEŚLI SĄ DOSTĘPNE).
+
     Lista ubrań:
     {json.dumps(wardrobe_data, ensure_ascii=False)}
     """
