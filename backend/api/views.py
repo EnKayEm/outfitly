@@ -394,3 +394,60 @@ def toggle_cloth_favourite(request, pk):
         'is_favourite': cloth.is_favourite,
         'message': 'Zaktualizowano status ulubionych.'
     }, status=status.HTTP_200_OK)
+#endpoint do zmiany nazwy użytkownika
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def change_username(request):
+    new_login = request.data.get('login')
+
+    if not new_login:
+        return Response({'error': 'Musisz podać nową nazwę użytkownika.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(login=new_login).exists():
+        return Response({'error': 'Ta nazwa użytkownika jest już zajęta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.login = new_login
+    request.user.save()
+
+    return Response({
+        'message': 'Nazwa użytkownika została zmieniona.',
+        'login': request.user.login
+    }, status=status.HTTP_200_OK)
+#endpoint do zmiany adresu e-mail użytkownika
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def change_email(request):
+    new_email = request.data.get('email')
+
+    if not new_email:
+        return Response({'error': 'Musisz podać nowy adres e-mail.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=new_email).exists():
+        return Response({'error': 'Ten adres e-mail jest już zajęty.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.email = new_email
+    request.user.save()
+
+    return Response({
+        'message': 'Adres e-mail został zmieniony.',
+        'email': request.user.email
+    }, status=status.HTTP_200_OK)
+#endpoint do zmiany hasła użytkownika
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+
+    if not old_password or not new_password:
+        return Response({'error': 'Musisz podać stare i nowe hasło.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not request.user.check_password(old_password):
+        return Response({'error': 'Stare hasło jest nieprawidłowe.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.set_password(new_password)
+    request.user.save()
+
+    return Response({
+        'message': 'Hasło zostało zmienione pomyślnie.'
+    }, status=status.HTTP_200_OK)

@@ -26,4 +26,6 @@ urlpatterns = [
     path('compositions/<int:pk>/update/', views.update_composition, name='update_composition'),
     path('clothes/<int:pk>/favourite/', views.toggle_cloth_favourite, name='toggle_cloth_favourite'),
     path('auth/change-username/', views.change_username, name='change_username'),
+    path('auth/change-email/', views.change_email, name='change_email'),
+    path('auth/change-password/', views.change_password, name='change_password'),
 ]
