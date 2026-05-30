@@ -22,4 +22,6 @@ urlpatterns = [
 
     path('compositions/', views.get_user_compositions, name='get_compositions'),
     path('compositions/<int:pk>/favourite/', views.toggle_composition_favourite, name='toggle_composition_favourite'),
+    path('compositions/<int:pk>/delete/', views.delete_composition, name='delete_composition'),
+    path('compositions/<int:pk>/update/', views.update_composition, name='update_composition'),
 ]

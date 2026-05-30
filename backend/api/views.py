@@ -337,3 +337,40 @@ def toggle_composition_favourite(request, pk):
         'is_favourite': composition.is_favourite,
         'message': 'Zaktualizowano status ulubionych.'
     }, status=status.HTTP_200_OK)    
+
+#endpoint do usuwania stylizacji z kolekcji
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_composition(request, pk):
+    try:
+        composition = Composition.objects.get(pk=pk, user=request.user)
+    except Composition.DoesNotExist:
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_FOUND)
+
+    composition.delete()
+    return Response({'message': 'Stylizacja została usunięta.'}, status=status.HTTP_204_NO_CONTENT)
+#endpoint do edycji stylizacji z kolekcji
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_composition(request, pk):
+    try:
+        composition = Composition.objects.get(pk=pk, user=request.user)
+    except Composition.DoesNotExist:
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_CONTENT)
+
+    target_event = request.data.get('target_event')
+    outfit_ids = request.data.get('outfit_ids')
+
+    if target_event:
+        composition.target_event = target_event
+
+    if outfit_ids:
+        clothes = Cloth.objects.filter(id__in=outfit_ids, user=request.user)
+        composition.clothes.set(clothes)
+
+    composition.save()
+
+    return Response({
+        'id': composition.id,
+        'message': 'Stylizacja zaktualizowana pomyślnie!'
+    }, status=status.HTTP_200_OK)
