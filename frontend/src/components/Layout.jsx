@@ -15,7 +15,15 @@ export default function Layout() {
   const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [username, setUsername] = useState('Użytkownik');
   const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -38,6 +46,7 @@ export default function Layout() {
     } finally {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('username');
       navigate('/login');
     }
   };
@@ -95,74 +104,85 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* User menu */}
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => isAuthenticated() && setIsUserMenuOpen(prev => !prev)}
-                className={`flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 transition-colors ${
-                  isAuthenticated() ? 'hover:bg-slate-100 cursor-pointer' : 'cursor-default'
-                }`}
-              >
-                <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                  S
-                </div>
-                {isAuthenticated() ? (
-                  <>
-                    <span className="text-sm font-medium text-slate-700 hidden sm:block">Superuser</span>
+            
+            {isAuthenticated() ? (
+              <>
+                {/* User menu dla zalogowanych */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(prev => !prev)}
+                    className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 transition-colors hover:bg-slate-100 cursor-pointer"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold uppercase">
+                      {username.charAt(0)}
+                    </div>
+                    <span className="text-sm font-medium text-slate-700 hidden sm:block">
+                      {username}
+                    </span>
                     <ChevronDown className={`w-3.5 h-3.5 text-slate-400 hidden sm:block transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
-                  </>
-                ) : (
-                  <span className="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded">
-                    Niezalogowany
-                  </span>
-                )}
-              </button>
+                  </button>
 
-              {isAuthenticated() && isUserMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                    <p className="text-sm font-semibold text-slate-800">Ustawienia konta</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Superuser</p>
-                  </div>
-                  <div className="py-2">
-                    {[
-                      { Icon: User, label: 'Zmień nazwę użytkownika' },
-                      { Icon: Mail, label: 'Zmień adres e-mail' },
-                      { Icon: Lock, label: 'Zmień hasło' },
-                    ].map(({ Icon, label }) => (
-                      <div
-                        key={label}
-                        className="flex items-center gap-3 px-4 py-2.5 text-slate-400 cursor-not-allowed select-none"
-                        title="Funkcja niedostępna — backend nie obsługuje jeszcze tej operacji"
-                      >
-                        <Icon className="w-4 h-4 shrink-0" />
-                        <span className="text-sm">{label}</span>
-                        <span className="ml-auto text-[10px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
-                          Wkrótce
-                        </span>
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                        <p className="text-sm font-semibold text-slate-800">Ustawienia konta</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{username}</p>
                       </div>
-                    ))}
-                  </div>
+                      <div className="py-2">
+                        {[
+                          { Icon: User, label: 'Zmień nazwę użytkownika' },
+                          { Icon: Mail, label: 'Zmień adres e-mail' },
+                          { Icon: Lock, label: 'Zmień hasło' },
+                        ].map(({ Icon, label }) => (
+                          <div
+                            key={label}
+                            className="flex items-center gap-3 px-4 py-2.5 text-slate-400 cursor-not-allowed select-none"
+                            title="Funkcja niedostępna — backend nie obsługuje jeszcze tej operacji"
+                          >
+                            <Icon className="w-4 h-4 shrink-0" />
+                            <span className="text-sm">{label}</span>
+                            <span className="ml-auto text-[10px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+                              Wkrótce
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Logout */}
-            {isAuthenticated() && (
-              <button
-                onClick={handleLogout}
-                className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
-                title="Wyloguj się"
-              >
-                <LogOut aria-hidden="true" className="w-4 h-4" />
-                <span className="hidden sm:inline">Wyloguj</span>
-              </button>
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
+                  title="Wyloguj się"
+                >
+                  <LogOut aria-hidden="true" className="w-4 h-4" />
+                  <span className="hidden sm:inline">Wyloguj</span>
+                </button>
+              </>
+            ) : (
+              /* Przyciski dla NIEzalogowanych */
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="hidden sm:block px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Zaloguj się
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  Zarejestruj
+                </Link>
+              </div>
             )}
 
             {/* Hamburger — tylko na mobile */}
             <button
               onClick={() => setIsMobileMenuOpen(prev => !prev)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors ml-1"
               aria-label="Menu nawigacyjne"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -188,6 +208,17 @@ export default function Layout() {
                   <Icon aria-hidden="true" className="w-4 h-4" /> {label}
                 </NavLink>
               ))}
+              {!isAuthenticated() && (
+                <div className="mt-2 pt-2 border-t border-slate-200 flex flex-col gap-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-4 py-2.5 text-center rounded-xl font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  >
+                    Zaloguj się
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
         )}
