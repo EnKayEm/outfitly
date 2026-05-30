@@ -174,7 +174,7 @@ export default function Layout() {
                   to="/register"
                   className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
                 >
-                  Zarejestruj
+                  Rejestracja
                 </Link>
               </div>
             )}
