@@ -1,14 +1,25 @@
 import google.generativeai as genai
 import os
 import json
+import random
 from django.conf import settings
 from PIL import Image
 
-def analyze_cloth_image(image_path):
-    api_key = os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        raise ValueError("Brak GEMINI_API_KEY w zmiennych środowiskowych!")
+def get_gemini_api_key():
+    keys = [
+        os.getenv('GEMINI_API_KEY_1'),
+        os.getenv('GEMINI_API_KEY_2')
+    ]
+    valid_keys = [key for key in keys if key]
 
+    if not valid_keys:
+        raise ValueError("Brak jakiegokolwiek klucza GEMINI_API_KEY w zmiennych środowiskowych!")
+
+    selected_key = random.choice(valid_keys)
+    return selected_key
+
+def analyze_cloth_image(image_path):
+    api_key = get_gemini_api_key()
     genai.configure(api_key=api_key)
     
     model = genai.GenerativeModel('gemini-3-flash-preview')
@@ -37,10 +48,7 @@ def analyze_cloth_image(image_path):
         return None
 
 def generate_stylization(wardrobe_data, occasion):
-    api_key = os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        raise ValueError("Brak GEMINI_API_KEY w zmiennych środowiskowych!")
-
+    api_key = get_gemini_api_key()
     genai.configure(api_key=api_key)
     
     model = genai.GenerativeModel('gemini-3-flash-preview')
