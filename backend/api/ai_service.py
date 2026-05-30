@@ -16,8 +16,8 @@ def analyze_cloth_image(image_path):
     prompt = """
     Przeanalizuj zdjęcie tego ubrania i zwróć odpowiedź.
     Wymagane pola w obiekcie:
-    - "color": (główny kolor ubrania, np. "Czarny", "Niebieski")
-    - "category": (tablica/lista stringów. Musi zawierać TYP ubrania np. "T-shirt", "Koszula", "Spodnie" ORAZ PASUJĄCE OKAZJE/STYL np. "Na co dzień", "Praca", "Eleganckie", "Sport", "Zima")
+    - "color": (główny kolor ubrania, np. "Czarny", "Niebieski", "Turkusowy")
+    - "category": (tablica/lista stringów. Musi zawierać TYP ubrania np. "T-shirt", "Koszula", "Spodnie", "Buty", "Akcesoria" ORAZ PASUJĄCE OKAZJE/STYL (DOKŁADNIE TYLKO TE): "Casual/Na co dzień", "Streetwear", "Eleganckie", "Sportowe")
     - "description": (krótki, zwięzły opis ubrania, max 100 znaków)
     BARDZO WAŻNE: Jeśli na przesłanym zdjęciu nie znajduje się element garderoby (ubranie, buty, dodatki), zwróć TYLKO json: {'error': 'not_clothing'}. Nie opisuj tego zdjęcia.
     """
@@ -51,7 +51,7 @@ def generate_stylization(wardrobe_data, occasion):
     Zwróć odpowiedź WYŁĄCZNIE jako obiekt JSON posiadający jeden klucz "outfit_ids", 
     który będzie zawierał tablicę (listę) numerów ID wybranych ubrań.
     Przykład poprawnej odpowiedzi: {{"outfit_ids": [1, 4, 7]}}
-    
+
     Lista ubrań:
     {json.dumps(wardrobe_data, ensure_ascii=False)}
     """
