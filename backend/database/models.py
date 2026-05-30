@@ -65,6 +65,8 @@ class Cloth(models.Model):
     description = models.CharField(max_length=512, blank=True)
 
     image = CloudinaryField('Image', null=True, blank=True)
+
+    is_favourite = models.BooleanField(default=False)
     
     # Is automatically set after a record creation
     creation_date   = models.DateTimeField(auto_now_add=True)

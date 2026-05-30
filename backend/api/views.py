@@ -374,3 +374,23 @@ def update_composition(request, pk):
         'id': composition.id,
         'message': 'Stylizacja zaktualizowana pomyślnie!'
     }, status=status.HTTP_200_OK)
+
+
+#endpoint dodanie do ulubionych
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def toggle_cloth_favourite(request, pk):
+    try:
+        cloth = Cloth.objects.get(pk=pk, user=request.user)
+    except Cloth.DoesNotExist:
+        return Response({'error': 'Nie znaleziono ubrania.'}, status=status.HTTP_404_NOT_FOUND)
+
+    cloth.is_favourite = not cloth.is_favourite
+    cloth.save()
+
+    return Response({
+        'id': cloth.id,
+        'is_favourite': cloth.is_favourite,
+        'message': 'Zaktualizowano status ulubionych.'
+    }, status=status.HTTP_200_OK)
