@@ -21,7 +21,7 @@ export default function Login() {
     }
 
     try {
-      setLoading(true); // start loading
+      setLoading(true);
 
       const response = await api.post('auth/login/', {
         login: username,
@@ -30,6 +30,8 @@ export default function Login() {
 
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
+
+      localStorage.setItem('username', username);
 
       navigate('/dashboard');
     } catch (err) {
