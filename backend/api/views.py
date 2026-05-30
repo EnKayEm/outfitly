@@ -320,3 +320,20 @@ def get_user_compositions(request):
         })
         
     return Response(data, status=status.HTTP_200_OK)
+#endpoint do dodania stylizacji do ulubionych
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def toggle_composition_favourite(request, pk):
+    try:
+        composition = Composition.objects.get(pk=pk, user=request.user)
+    except Composition.DoesNotExist:
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_FOUND)
+
+    composition.is_favourite = not composition.is_favourite
+    composition.save()
+
+    return Response({
+        'id': composition.id,
+        'is_favourite': composition.is_favourite,
+        'message': 'Zaktualizowano status ulubionych.'
+    }, status=status.HTTP_200_OK)    

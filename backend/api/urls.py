@@ -21,4 +21,5 @@ urlpatterns = [
     path('clothes/manual/', views.manual_upload_cloth, name='manual_upload_cloth'),
 
     path('compositions/', views.get_user_compositions, name='get_compositions'),
+    path('compositions/<int:pk>/favourite/', views.toggle_composition_favourite, name='toggle_composition_favourite'),
 ]
