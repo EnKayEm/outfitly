@@ -87,6 +87,8 @@ class Composition(models.Model):
     target_event    = models.CharField(max_length=128)
     clothes         = models.ManyToManyField("Cloth")  # Implicit `CompositionForming` table
     
+    creation_date   = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
-        return f"Composition(user_id={self.user_id}, is_favourite={self.is_favourite}, target_event={self.target_event})"
+        return f"Composition(user_id={self.user_id}, is_favourite={self.is_favourite}, target_event={self.target_event}, creation_date={self.creation_date})"
 

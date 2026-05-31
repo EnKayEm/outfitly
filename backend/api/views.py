@@ -299,7 +299,7 @@ def manual_upload_cloth(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_compositions(request):
-    compositions = Composition.objects.filter(user=request.user).prefetch_related('clothes').order_by('-id')
+    compositions = Composition.objects.filter(user=request.user).prefetch_related('clothes').order_by('-creation_date')
     
     data = []
     for comp in compositions:
@@ -315,11 +315,12 @@ def get_user_compositions(request):
         data.append({
             'id': comp.id,
             'occasion': comp.target_event,
-            'created_at': comp.created_at if hasattr(comp, 'created_at') else "Brak daty",
+            'creation_date': comp.creation_date,
             'clothes': clothes_list
         })
         
     return Response(data, status=status.HTTP_200_OK)
+
 #endpoint do dodania stylizacji do ulubionych
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -349,6 +350,7 @@ def delete_composition(request, pk):
 
     composition.delete()
     return Response({'message': 'Stylizacja została usunięta.'}, status=status.HTTP_204_NO_CONTENT)
+
 #endpoint do edycji stylizacji z kolekcji
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -356,7 +358,7 @@ def update_composition(request, pk):
     try:
         composition = Composition.objects.get(pk=pk, user=request.user)
     except Composition.DoesNotExist:
-        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_CONTENT)
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_FOUND)
 
     target_event = request.data.get('target_event')
     outfit_ids = request.data.get('outfit_ids')
@@ -377,7 +379,6 @@ def update_composition(request, pk):
 
 
 #endpoint dodanie do ulubionych
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def toggle_cloth_favourite(request, pk):
@@ -394,6 +395,7 @@ def toggle_cloth_favourite(request, pk):
         'is_favourite': cloth.is_favourite,
         'message': 'Zaktualizowano status ulubionych.'
     }, status=status.HTTP_200_OK)
+    
 #endpoint do zmiany nazwy użytkownika
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -413,6 +415,7 @@ def change_username(request):
         'message': 'Nazwa użytkownika została zmieniona.',
         'login': request.user.login
     }, status=status.HTTP_200_OK)
+    
 #endpoint do zmiany adresu e-mail użytkownika
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -432,6 +435,7 @@ def change_email(request):
         'message': 'Adres e-mail został zmieniony.',
         'email': request.user.email
     }, status=status.HTTP_200_OK)
+    
 #endpoint do zmiany hasła użytkownika
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
