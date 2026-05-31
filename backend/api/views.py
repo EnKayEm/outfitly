@@ -310,7 +310,8 @@ def get_user_compositions(request):
                 'id': cloth.id,
                 'color': cloth.color,
                 'description': cloth.description,
-                'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None
+                'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None,
+                'is_favourite': cloth.is_favourite,
             })
             
         data.append({
