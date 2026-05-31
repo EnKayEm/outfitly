@@ -511,6 +511,7 @@ const toggleClothFavorite = async (id) => {
         isOpen={isDetailsModalOpen}
         onClose={() => { setIsDetailsModalOpen(false); setSelectedClothingId(null); }}
         clothingId={selectedClothingId}
+        onSuccess={fetchOutfits}
       />
 
     </div>
