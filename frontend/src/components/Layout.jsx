@@ -4,6 +4,7 @@ import api from '../api/axiosConfig';
 import { Shirt, Sparkles, LayoutGrid, LogOut, ChevronDown, User, Mail, Lock, Phone, Menu, X } from 'lucide-react';
 import { isAuthenticated } from '../api/auth';
 import AccountSettingsModal from './AccountSettingsModal';
+import toast from 'react-hot-toast';
 
 const navLinks = [
   { to: '/dashboard',     label: 'Twoja Szafa',       Icon: LayoutGrid, activeClass: 'bg-blue-50 text-blue-700' },
@@ -59,11 +60,11 @@ const changeUsername = async (login) => {
     localStorage.setItem('username', login);
     setUsername(login);
 
-    alert('Nazwa użytkownika została zmieniona');
+    toast.success('Nazwa użytkownika została zmieniona');
 
   } catch (err) {
     console.error(err);
-    alert('Błąd przy zmianie nazwy');
+    toast.error('Błąd przy zmianie nazwy');
   }
 };
 
@@ -71,11 +72,11 @@ const changeEmail = async (email) => {
   try {
     await api.patch('auth/change-email/', { email });
 
-    alert('Email został zmieniony');
+    toast.success('Email został zmieniony');
 
   } catch (err) {
     console.error(err);
-    alert('Błąd przy zmianie emaila');
+    toast.error('Błąd przy zmianie emaila');
   }
 };
 
@@ -86,11 +87,11 @@ const changePassword = async (oldPassword, newPassword) => {
       new_password: newPassword,
     });
 
-    alert('Hasło zostało zmienione');
+    toast.success('Hasło zostało zmienione');
 
   } catch (err) {
     console.error(err);
-    alert('Błąd przy zmianie hasła');
+    toast.error('Błąd przy zmianie hasła');
   }
 };
 
