@@ -15,7 +15,7 @@ const team = [
     role: 'Backend & API',
     email: 'a.nowak@student.edu.pl',
     github: 'anowak',
-    linkedin: 'anna-nowak-dev',
+    linkedin: 'anna-nowak',
     avatar: 'AN',
     color: 'bg-purple-100 text-purple-600',
   },
