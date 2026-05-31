@@ -2,41 +2,42 @@ import { Code2, Mail, ExternalLink, Users } from 'lucide-react';
 
 const team = [
   {
-    name: 'Jakub Kowalski',
-    role: 'Frontend & UI/UX',
-    email: 'j.kowalski@student.edu.pl',
-    github: 'jkowalski',
-    linkedin: 'jakub-kowalski',
-    avatar: 'JK',
+    name: 'Norbert Mazur',
+    role: 'Tech Lead & Backend Lead',
+    avatar: 'NM',
     color: 'bg-blue-100 text-blue-600',
   },
   {
-    name: 'Anna Nowak',
-    role: 'Backend & API',
-    email: 'a.nowak@student.edu.pl',
-    github: 'anowak',
-    linkedin: 'anna-nowak',
-    avatar: 'AN',
+    name: 'Bartłomiej Wilk',
+    role: 'Database & Backend Developer',
+    avatar: 'BW',
     color: 'bg-purple-100 text-purple-600',
   },
   {
-    name: 'Piotr Wiśniewski',
-    role: 'AI / Machine Learning',
-    email: 'p.wisniewski@student.edu.pl',
-    github: 'pwisniewski',
-    linkedin: 'piotr-wisniewski',
-    avatar: 'PW',
+    name: 'Jan Burghardt',
+    role: 'Frontend Lead',
+    avatar: 'JB',
     color: 'bg-emerald-100 text-emerald-600',
   },
   {
-    name: 'Marta Zielińska',
-    role: 'Bazy danych & DevOps',
-    email: 'm.zielinska@student.edu.pl',
-    github: 'mzielinska',
-    linkedin: 'marta-zielinska',
-    avatar: 'MZ',
+    name: 'Wojciech Żurowski',
+    role: 'Frontend Developer',
+    avatar: 'WZ',
     color: 'bg-pink-100 text-pink-600',
   },
+  {
+    name: 'Bartłomiej Zygmunt',
+    role: 'Backend Developer',
+    avatar: 'BZ',
+    color: 'bg-yellow-100 text-yellow-600',
+  },
+  {
+    name: 'Kamil Wójcik',
+    role: 'QA & Documentation',
+    avatar: 'KW',
+    color: 'bg-indigo-100 text-indigo-600',
+  },
+
 ];
 
 export default function Contact() {
@@ -54,7 +55,9 @@ export default function Contact() {
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-2xl p-6 mb-8">
         <h2 className="text-lg font-semibold text-slate-800 mb-2">O projekcie</h2>
         <p className="text-slate-600 leading-relaxed">
-          <strong>Outfitly</strong> 
+          <strong>Outfitly</strong> to aplikacja webowa wspierająca użytkowników w zarządzaniu własną garderobą 
+            oraz tworzeniu stylizacji. Wykorzystuje sztuczną inteligencję do analizy ubrań i proponowania zestawów 
+            dopasowanych do okazji. Użytkownik może dodawać ubrania, tworzyć stylizacje oraz zapisywać ulubione kombinacje.
         </p>
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
           <span className="px-3 py-1 bg-white border border-blue-200 text-blue-700 rounded-full font-medium">React + Vite</span>

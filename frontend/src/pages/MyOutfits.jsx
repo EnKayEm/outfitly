@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import ClothingCard from '../components/ClothingCard';
@@ -8,6 +7,7 @@ import { isAuthenticated } from '../api/auth';
 import { demoOutfits, demoClothes } from '../data/demoData';
 import ClothingDetailsModal from '../components/ClothingDetailsModal';
 import { Heart, Trash2, ChevronLeft, ChevronRight, Shirt, PencilRuler, Plus, X, AlertTriangle } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 const formatDate = (dateStr) => {
   if (!dateStr) return null;
@@ -19,6 +19,7 @@ const formatDate = (dateStr) => {
 };
 
 export default function MyOutfits() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedClothingId, setSelectedClothingId] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
@@ -144,8 +145,15 @@ export default function MyOutfits() {
   };
 
   const editedClothes = allClothes.filter(c => editedIds.includes(String(c.id)));
+  const filteredOutfits = outfits.filter(o => {
+    const matchesSearch = o.occasion
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
-  const filteredOutfits = outfits.filter(o => showFavorites ? o.is_favourite : true);
+    const matchesFav = showFavorites ? o.is_favourite : true;
+
+    return matchesSearch && matchesFav;
+  });
   const indexOfLast = currentPage * outfitsPerPage;
   const indexOfFirst = indexOfLast - outfitsPerPage;
   const currentOutfits = filteredOutfits.slice(indexOfFirst, indexOfLast);
@@ -161,7 +169,17 @@ export default function MyOutfits() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
           Moje Stylizacje <Shirt className="text-blue-600 w-6 h-6" />
-        </h1>
+        </h1> 
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Szukaj stylizacji..."
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => { setShowFavorites(false); setCurrentPage(1); }}
