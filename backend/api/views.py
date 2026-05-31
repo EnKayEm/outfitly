@@ -299,7 +299,7 @@ def manual_upload_cloth(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_compositions(request):
-    compositions = Composition.objects.filter(user=request.user).prefetch_related('clothes').order_by('-id')
+    compositions = Composition.objects.filter(user=request.user).prefetch_related('clothes').order_by('-creation_date')
     
     data = []
     for comp in compositions:
@@ -315,8 +315,143 @@ def get_user_compositions(request):
         data.append({
             'id': comp.id,
             'occasion': comp.target_event,
-            'created_at': comp.created_at if hasattr(comp, 'created_at') else "Brak daty",
+            'creation_date': comp.creation_date,
             'clothes': clothes_list
         })
         
     return Response(data, status=status.HTTP_200_OK)
+
+#endpoint do dodania stylizacji do ulubionych
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def toggle_composition_favourite(request, pk):
+    try:
+        composition = Composition.objects.get(pk=pk, user=request.user)
+    except Composition.DoesNotExist:
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_FOUND)
+
+    composition.is_favourite = not composition.is_favourite
+    composition.save()
+
+    return Response({
+        'id': composition.id,
+        'is_favourite': composition.is_favourite,
+        'message': 'Zaktualizowano status ulubionych.'
+    }, status=status.HTTP_200_OK)    
+
+#endpoint do usuwania stylizacji z kolekcji
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_composition(request, pk):
+    try:
+        composition = Composition.objects.get(pk=pk, user=request.user)
+    except Composition.DoesNotExist:
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_FOUND)
+
+    composition.delete()
+    return Response({'message': 'Stylizacja została usunięta.'}, status=status.HTTP_204_NO_CONTENT)
+
+#endpoint do edycji stylizacji z kolekcji
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_composition(request, pk):
+    try:
+        composition = Composition.objects.get(pk=pk, user=request.user)
+    except Composition.DoesNotExist:
+        return Response({'error': 'Nie znaleziono stylizacji.'}, status=status.HTTP_404_NOT_FOUND)
+
+    target_event = request.data.get('target_event')
+    outfit_ids = request.data.get('outfit_ids')
+
+    if target_event:
+        composition.target_event = target_event
+
+    if outfit_ids:
+        clothes = Cloth.objects.filter(id__in=outfit_ids, user=request.user)
+        composition.clothes.set(clothes)
+
+    composition.save()
+
+    return Response({
+        'id': composition.id,
+        'message': 'Stylizacja zaktualizowana pomyślnie!'
+    }, status=status.HTTP_200_OK)
+
+
+#endpoint dodanie do ulubionych
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def toggle_cloth_favourite(request, pk):
+    try:
+        cloth = Cloth.objects.get(pk=pk, user=request.user)
+    except Cloth.DoesNotExist:
+        return Response({'error': 'Nie znaleziono ubrania.'}, status=status.HTTP_404_NOT_FOUND)
+
+    cloth.is_favourite = not cloth.is_favourite
+    cloth.save()
+
+    return Response({
+        'id': cloth.id,
+        'is_favourite': cloth.is_favourite,
+        'message': 'Zaktualizowano status ulubionych.'
+    }, status=status.HTTP_200_OK)
+    
+#endpoint do zmiany nazwy użytkownika
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def change_username(request):
+    new_login = request.data.get('login')
+
+    if not new_login:
+        return Response({'error': 'Musisz podać nową nazwę użytkownika.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(login=new_login).exists():
+        return Response({'error': 'Ta nazwa użytkownika jest już zajęta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.login = new_login
+    request.user.save()
+
+    return Response({
+        'message': 'Nazwa użytkownika została zmieniona.',
+        'login': request.user.login
+    }, status=status.HTTP_200_OK)
+    
+#endpoint do zmiany adresu e-mail użytkownika
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def change_email(request):
+    new_email = request.data.get('email')
+
+    if not new_email:
+        return Response({'error': 'Musisz podać nowy adres e-mail.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=new_email).exists():
+        return Response({'error': 'Ten adres e-mail jest już zajęty.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.email = new_email
+    request.user.save()
+
+    return Response({
+        'message': 'Adres e-mail został zmieniony.',
+        'email': request.user.email
+    }, status=status.HTTP_200_OK)
+    
+#endpoint do zmiany hasła użytkownika
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+
+    if not old_password or not new_password:
+        return Response({'error': 'Musisz podać stare i nowe hasło.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not request.user.check_password(old_password):
+        return Response({'error': 'Stare hasło jest nieprawidłowe.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.set_password(new_password)
+    request.user.save()
+
+    return Response({
+        'message': 'Hasło zostało zmienione pomyślnie.'
+    }, status=status.HTTP_200_OK)
