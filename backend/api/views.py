@@ -211,7 +211,8 @@ def get_user_clothes(request):
             'description': cloth.description,
             'image_url': request.build_absolute_uri(cloth.image.url) if cloth.image else None,
             'categories': list(cloth.category_set.values_list('name', flat=True)),
-            'creation_date': cloth.creation_date
+            'creation_date': cloth.creation_date,
+            'is_favourite': cloth.is_favourite,
         })
         
     return Response(data, status=status.HTTP_200_OK)
