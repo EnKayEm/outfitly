@@ -14,7 +14,7 @@ export default function Deklaracja() {
           Aplikacja <strong>Outfitly</strong> jest projektem studenckim realizowanym w ramach zajęć na uczelni.
           Zobowiązujemy się do zapewnienia dostępności cyfrowej zgodnie z obowiązującymi wytycznymi WCAG 2.1.
           Niniejsza deklaracja dotyczy strony dostępnej pod adresem:{' '}
-          <span className="font-medium text-slate-800">https://outfitly67.netlify.app/</span>.
+          <span className="font-medium text-slate-800">https://outfitly-peach.vercel.app/</span>.
         </p>
       </section>
 
