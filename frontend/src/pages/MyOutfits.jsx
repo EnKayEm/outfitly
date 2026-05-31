@@ -84,6 +84,43 @@ export default function MyOutfits() {
     }
   };
 
+  
+const toggleClothFavorite = async (id) => {
+  if (!isAuthenticated()) {
+    setShowGuestModal(true);
+    return;
+  }
+
+  try {
+    const res = await api.patch(`clothes/${id}/favourite/`);
+
+    // update clothes globalnie
+    setAllClothes(prev =>
+      prev.map(c =>
+        c.id === id
+          ? { ...c, is_favourite: res.data.is_favourite }
+          : c
+      )
+    );
+
+    // update ubrań WEWNĄTRZ outfitów
+    setOutfits(prev =>
+      prev.map(outfit => ({
+        ...outfit,
+        clothes: outfit.clothes?.map(c =>
+          c.id === id
+            ? { ...c, is_favourite: res.data.is_favourite }
+            : c
+        )
+      }))
+    );
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
   const handleDelete = async (id) => {
     if (!isAuthenticated()) { setShowGuestModal(true); return; }
 
@@ -125,9 +162,10 @@ export default function MyOutfits() {
       const newClothes = allClothes.filter(c =>
         editedIds.includes(String(c.id))
       );
-
+      
       await api.put(`compositions/${editingOutfit.id}/update/`, {
         outfit_ids: editedIds.map(id => Number(id)),
+        target_event: editingOutfit.occasion,
       });
 
       setOutfits(prev =>
@@ -273,16 +311,17 @@ export default function MyOutfits() {
                 {outfit.clothes?.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {outfit.clothes.map((item) => (
-                      <ClothingCard
-                        key={item.id}
-                        item={item}
-                        onClick={(id) => {
-                          if (!isAuthenticated()) { setShowGuestModal(true); return; }
-                          setSelectedClothingId(id);
-                          setIsDetailsModalOpen(true);
-                        }}
-                      />
-                    ))}
+                        <ClothingCard
+                          key={item.id}
+                          item={item}
+                          onClick={(id) => {
+                            if (!isAuthenticated()) { setShowGuestModal(true); return; }
+                            setSelectedClothingId(id);
+                            setIsDetailsModalOpen(true);
+                          }}
+                          onToggleFavorite={toggleClothFavorite}
+                        />
+                      ))}
                   </div>
                 ) : (
                   <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-4">

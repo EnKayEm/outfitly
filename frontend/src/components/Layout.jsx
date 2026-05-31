@@ -50,6 +50,38 @@ export default function Layout() {
       navigate('/login');
     }
   };
+  
+const changeUsername = async (login) => {
+  try {
+    await api.patch('auth/change-username/', { login });
+    localStorage.setItem('username', login);
+    setUsername(login);
+    console.log('Zmieniono nazwę');
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const changeEmail = async (email) => {
+  try {
+    await api.patch('auth/change-email/', { email });
+    console.log('Zmieniono email');
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const changePassword = async (oldPassword, newPassword) => {
+  try {
+    await api.patch('auth/change-password/', {
+      old_password: oldPassword,
+      new_password: newPassword,
+    });
+    console.log('Zmieniono hasło');
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -128,25 +160,45 @@ export default function Layout() {
                         <p className="text-sm font-semibold text-slate-800">Ustawienia konta</p>
                         <p className="text-xs text-slate-400 mt-0.5">{username}</p>
                       </div>
+                      
                       <div className="py-2">
-                        {[
-                          { Icon: User, label: 'Zmień nazwę użytkownika' },
-                          { Icon: Mail, label: 'Zmień adres e-mail' },
-                          { Icon: Lock, label: 'Zmień hasło' },
-                        ].map(({ Icon, label }) => (
-                          <div
-                            key={label}
-                            className="flex items-center gap-3 px-4 py-2.5 text-slate-400 cursor-not-allowed select-none"
-                            title="Funkcja niedostępna — backend nie obsługuje jeszcze tej operacji"
-                          >
-                            <Icon className="w-4 h-4 shrink-0" />
-                            <span className="text-sm">{label}</span>
-                            <span className="ml-auto text-[10px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
-                              Wkrótce
-                            </span>
-                          </div>
-                        ))}
+
+                        <div
+                          onClick={() => {
+                            const newLogin = prompt("Nowa nazwa użytkownika:");
+                            if (newLogin) changeUsername(newLogin);
+                          }}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
+                        >
+                          <User className="w-4 h-4" />
+                          <span className="text-sm">Zmień nazwę użytkownika</span>
+                        </div>
+
+                        <div
+                          onClick={() => {
+                            const email = prompt("Nowy email:");
+                            if (email) changeEmail(email);
+                          }}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
+                        >
+                          <Mail className="w-4 h-4" />
+                          <span className="text-sm">Zmień adres e-mail</span>
+                        </div>
+
+                        <div
+                          onClick={() => {
+                            const oldPass = prompt("Stare hasło:");
+                            const newPass = prompt("Nowe hasło:");
+                            if (oldPass && newPass) changePassword(oldPass, newPass);
+                          }}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
+                        >
+                          <Lock className="w-4 h-4" />
+                          <span className="text-sm">Zmień hasło</span>
+                        </div>
+
                       </div>
+
                     </div>
                   )}
                 </div>
