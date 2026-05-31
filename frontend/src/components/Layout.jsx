@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { Shirt, Sparkles, LayoutGrid, LogOut, ChevronDown, User, Mail, Lock, Phone, Menu, X } from 'lucide-react';
 import { isAuthenticated } from '../api/auth';
+import AccountSettingsModal from './AccountSettingsModal';
 
 const navLinks = [
   { to: '/dashboard',     label: 'Twoja Szafa',       Icon: LayoutGrid, activeClass: 'bg-blue-50 text-blue-700' },
@@ -17,6 +18,7 @@ export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [username, setUsername] = useState('Użytkownik');
   const userMenuRef = useRef(null);
+  const [settingsModal, setSettingsModal] = useState(null);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
@@ -56,18 +58,24 @@ const changeUsername = async (login) => {
     await api.patch('auth/change-username/', { login });
     localStorage.setItem('username', login);
     setUsername(login);
-    console.log('Zmieniono nazwę');
+
+    alert('Nazwa użytkownika została zmieniona');
+
   } catch (err) {
     console.error(err);
+    alert('Błąd przy zmianie nazwy');
   }
 };
 
 const changeEmail = async (email) => {
   try {
     await api.patch('auth/change-email/', { email });
-    console.log('Zmieniono email');
+
+    alert('Email został zmieniony');
+
   } catch (err) {
     console.error(err);
+    alert('Błąd przy zmianie emaila');
   }
 };
 
@@ -77,11 +85,25 @@ const changePassword = async (oldPassword, newPassword) => {
       old_password: oldPassword,
       new_password: newPassword,
     });
-    console.log('Zmieniono hasło');
+
+    alert('Hasło zostało zmienione');
+
   } catch (err) {
     console.error(err);
+    alert('Błąd przy zmianie hasła');
   }
 };
+
+const handleSettingsSubmit = (val1, val2) => {
+  if (settingsModal === 'username') {
+    changeUsername(val1);
+  } else if (settingsModal === 'email') {
+    changeEmail(val1);
+  } else if (settingsModal === 'password') {
+    changePassword(val1, val2);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -164,10 +186,7 @@ const changePassword = async (oldPassword, newPassword) => {
                       <div className="py-2">
 
                         <div
-                          onClick={() => {
-                            const newLogin = prompt("Nowa nazwa użytkownika:");
-                            if (newLogin) changeUsername(newLogin);
-                          }}
+                          onClick={() => {setSettingsModal('username');setIsUserMenuOpen(false);}}
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
                         >
                           <User className="w-4 h-4" />
@@ -175,10 +194,7 @@ const changePassword = async (oldPassword, newPassword) => {
                         </div>
 
                         <div
-                          onClick={() => {
-                            const email = prompt("Nowy email:");
-                            if (email) changeEmail(email);
-                          }}
+                          onClick={() => {setSettingsModal('email');setIsUserMenuOpen(false);}}
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
                         >
                           <Mail className="w-4 h-4" />
@@ -186,11 +202,7 @@ const changePassword = async (oldPassword, newPassword) => {
                         </div>
 
                         <div
-                          onClick={() => {
-                            const oldPass = prompt("Stare hasło:");
-                            const newPass = prompt("Nowe hasło:");
-                            if (oldPass && newPass) changePassword(oldPass, newPass);
-                          }}
+                          onClick={() => {setSettingsModal('password');setIsUserMenuOpen(false);}}
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
                         >
                           <Lock className="w-4 h-4" />
@@ -290,6 +302,15 @@ const changePassword = async (oldPassword, newPassword) => {
           </Link>
         </div>
       </footer>
+
+      {settingsModal && (
+        <AccountSettingsModal
+          type={settingsModal}
+          onClose={() => setSettingsModal(null)}
+          onSubmit={handleSettingsSubmit}
+        />
+      )}
+
     </div>
   );
 }

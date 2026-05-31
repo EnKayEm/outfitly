@@ -43,7 +43,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             }
             
             setClothing(data);
-            setIsFavorite(data.is_favorite || false);
+            setIsFavorite(data.is_favourite || false);
         } catch (err) {
             setError('Nie udało się pobrać szczegółów ubrania.');
         } finally {
@@ -104,9 +104,13 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     
     // Wymuszamy nadpisanie kategorii na backendzie
     if (editData.categories.length > 0) {
-      editData.categories.forEach(cat => formData.append('categories', cat));
+      editData.categories.forEach(cat => {
+        if (cat && cat.trim() !== '') {
+          formData.append('categories', cat);
+        }
+      });
     } else {
-      formData.append('categories', ''); 
+      formData.append('categories', '__empty__');
     }
 
     try {
