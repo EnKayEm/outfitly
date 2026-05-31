@@ -50,7 +50,7 @@ export default function MyOutfits() {
       setOutfits(res.data);
     } catch (err) {
       console.error(err);
-      setError('Nie udało się pobrać stylizacji');
+      setError('Nie udało się pobrać stylizacji.');
     } finally {
       setLoading(false);
     }
