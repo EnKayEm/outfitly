@@ -65,14 +65,33 @@ export default function MyOutfits() {
     api.get('clothes/').then(r => setAllClothes(r.data)).catch(() => {});
   }, []);
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = async (id) => {
     if (!isAuthenticated()) { setShowGuestModal(true); return; }
-    setOutfits(prev => prev.map(o => o.id === id ? { ...o, is_favorite: !o.is_favorite } : o));
+
+    try {
+      const res = await api.patch(`compositions/${id}/favourite/`);
+
+      setOutfits(prev =>
+        prev.map(o =>
+          o.id === id
+            ? { ...o, is_favourite: res.data.is_favourite }
+            : o
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!isAuthenticated()) { setShowGuestModal(true); return; }
-    setOutfits(prev => prev.filter(o => o.id !== id));
+
+    try {
+      await api.delete(`compositions/${id}/delete/`);
+      setOutfits(prev => prev.filter(o => o.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // --- Edycja ---
@@ -100,18 +119,33 @@ export default function MyOutfits() {
     setEditedIds(prev => prev.filter(id => id !== String(itemId)));
   };
 
-  const handleSaveEdit = () => {
-    const newClothes = allClothes.filter(c => editedIds.includes(String(c.id)));
-    setOutfits(prev => prev.map(o =>
-      o.id === editingOutfit.id ? { ...o, clothes: newClothes } : o
-    ));
-    setEditingOutfit(null);
-    // TODO: backend wymaga endpointu PATCH /api/compositions/<id>/ żeby zmiany były trwałe
+  const handleSaveEdit = async () => {
+    try {
+      const newClothes = allClothes.filter(c =>
+        editedIds.includes(String(c.id))
+      );
+
+      await api.put(`compositions/${editingOutfit.id}/update/`, {
+        outfit_ids: editedIds.map(id => Number(id)),
+      });
+
+      setOutfits(prev =>
+        prev.map(o =>
+          o.id === editingOutfit.id
+            ? { ...o, clothes: newClothes }
+            : o
+        )
+      );
+
+      setEditingOutfit(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const editedClothes = allClothes.filter(c => editedIds.includes(String(c.id)));
 
-  const filteredOutfits = outfits.filter(o => showFavorites ? o.is_favorite : true);
+  const filteredOutfits = outfits.filter(o => showFavorites ? o.is_favourite : true);
   const indexOfLast = currentPage * outfitsPerPage;
   const indexOfFirst = indexOfLast - outfitsPerPage;
   const currentOutfits = filteredOutfits.slice(indexOfFirst, indexOfLast);
@@ -184,9 +218,9 @@ export default function MyOutfits() {
                     <h2 className="font-semibold text-slate-800">
                       Okazja: {outfit.occasion || 'Brak'}
                     </h2>
-                    {formatDate(outfit.created_at) && (
+                    {formatDate(outfit.creation_date) && (
                       <p className="text-sm text-slate-400 mt-0.5">
-                        {formatDate(outfit.created_at)}
+                        {formatDate(outfit.creation_date)}
                       </p>
                     )}
                   </div>
@@ -201,11 +235,11 @@ export default function MyOutfits() {
                     <button
                       onClick={() => toggleFavorite(outfit.id)}
                       className={`p-2 rounded-lg transition-colors hover:bg-white ${
-                        outfit.is_favorite ? 'text-pink-500' : 'text-slate-300 hover:text-pink-400'
+                        outfit.is_favourite ? 'text-pink-500' : 'text-slate-300 hover:text-pink-400'
                       }`}
-                      title={outfit.is_favorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
+                      title={outfit.is_favourite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
                     >
-                      <Heart className="w-5 h-5" fill={outfit.is_favorite ? 'currentColor' : 'none'} />
+                      <Heart className="w-5 h-5" fill={outfit.is_favourite ? 'currentColor' : 'none'} />
                     </button>
                     <button
                       onClick={() => setOutfitToDelete(outfit)}
