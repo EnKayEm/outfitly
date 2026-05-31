@@ -233,6 +233,27 @@ useEffect(() => {
       return pages;
     };
 
+    const toggleClothFavorite = async (id) => {
+      if (!isAuthenticated()) {
+        setShowGuestModal(true);
+        return;
+      }
+
+      try {
+        const res = await api.patch(`clothes/${id}/favourite/`);
+
+        setClothes(prev =>
+          prev.map(c =>
+            c.id === id
+              ? { ...c, is_favourite: res.data.is_favourite }
+              : c
+          )
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[500px]">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
@@ -417,8 +438,8 @@ useEffect(() => {
         ) : currentClothes.length > 0 ? ( // ZMIANA: używamy currentClothes
             currentClothes.map(item => (
               <ClothingCard 
-                key={item.id} 
-                item={item} 
+                key={item.id}
+                item={item}
                 onClick={(id) => {
                   if (!isAuthenticated()) {
                     setShowGuestModal(true);
@@ -428,6 +449,7 @@ useEffect(() => {
                   setSelectedClothingId(id);
                   setIsDetailsModalOpen(true);
                 }}
+                onToggleFavorite={toggleClothFavorite}
               />
           ))
         ) : (

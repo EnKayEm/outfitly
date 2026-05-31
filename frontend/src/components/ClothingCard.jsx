@@ -11,8 +11,7 @@ const formatDate = (dateString) => {
   });
 };
 
-export default function ClothingCard({ item, onClick, children }) {
-  const [isFavorite, setIsFavorite] = useState(item.is_favorite || false);
+export default function ClothingCard({ item, onClick, onToggleFavorite, children }) {
 
   const validCategories = item.categories
     ? item.categories.filter(cat => cat && cat.trim() !== '')
@@ -38,15 +37,15 @@ export default function ClothingCard({ item, onClick, children }) {
         
         {/* Serduszko */}
         <button
-          onClick={(e) => { e.stopPropagation(); setIsFavorite(prev => !prev); }}
-          title={isFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
+          onClick={(e) => {e.stopPropagation();onToggleFavorite(item.id);}}
+          title={item.is_favourite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
           className={`absolute top-3 left-3 p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-sm border transition-all duration-150 z-10 ${
-            isFavorite
+            item.is_favourite
               ? 'text-pink-500 border-pink-200'
               : 'text-slate-300 border-slate-200 opacity-0 group-hover:opacity-100 hover:text-pink-400 hover:border-pink-200'
           }`}
         >
-          <Heart className="w-3.5 h-3.5" fill={isFavorite ? 'currentColor' : 'none'} />
+          <Heart className="w-3.5 h-3.5" fill={item.is_favourite ? 'currentColor' : 'none'} />
         </button>
 
         {/* Odznaka z datą */}
