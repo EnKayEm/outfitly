@@ -316,6 +316,7 @@ def get_user_compositions(request):
             'id': comp.id,
             'occasion': comp.target_event,
             'creation_date': comp.creation_date,
+            'is_favourite': comp.is_favourite,
             'clothes': clothes_list
         })
         
