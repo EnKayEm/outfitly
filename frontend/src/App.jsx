@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import MyOutfits from './pages/MyOutfits';
 import Contact from './pages/Contact';
 import Deklaracja from './pages/Deklaracja';
+import Settings from './pages/Settings';
 import { Toaster } from 'react-hot-toast';
 
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/my-outfits" element={<MyOutfits />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/deklaracja-dostepnosci" element={<Deklaracja />} />
         </Route>
 
