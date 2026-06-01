@@ -49,6 +49,15 @@ def logout_user(request):
     except Exception:
         return Response({"error": "Błędny token lub już wygasł."}, status=status.HTTP_400_BAD_REQUEST)
 
+# Endpoint do pobrania danych zalogowanego użytkownika - GET /api/auth/me/
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    return Response({
+        'login': request.user.login,
+        'email': request.user.email,
+    }, status=status.HTTP_200_OK)
+
 # Endpoint do przesyłania zdjęcia ubrania i otrzymywania analizy AI - POST /api/clothes/upload/
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

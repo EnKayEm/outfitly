@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { ArrowLeft, User, Mail, Lock, Save, Loader2 } from 'lucide-react';
+import { isAuthenticated } from '../api/auth';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
   const [username, setUsername] = useState('Użytkownik');
+  const [currentEmail, setCurrentEmail] = useState('');
 
   // Wartości formularzy
   const [newUsername, setNewUsername] = useState('');
@@ -22,6 +24,24 @@ export default function Settings() {
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
     if (storedUsername) setUsername(storedUsername);
+    const storedEmail = localStorage.getItem('email');
+    if (storedEmail) setCurrentEmail(storedEmail);
+
+    // Dociągamy aktualne dane konta (e-maila nie ma w tokenie JWT)
+    if (isAuthenticated()) {
+      api.get('auth/me/')
+        .then((res) => {
+          if (res.data?.login) {
+            setUsername(res.data.login);
+            localStorage.setItem('username', res.data.login);
+          }
+          if (res.data?.email) {
+            setCurrentEmail(res.data.email);
+            localStorage.setItem('email', res.data.email);
+          }
+        })
+        .catch(() => { /* nie udało się pobrać danych konta — pomijamy */ });
+    }
   }, []);
 
   const handleChangeUsername = async (e) => {
@@ -36,7 +56,7 @@ export default function Settings() {
       localStorage.setItem('username', newUsername);
       setUsername(newUsername);
       setNewUsername('');
-      window.dispatchEvent(new Event('username-updated'));
+      window.dispatchEvent(new Event('user-updated'));
       toast.success('Nazwa użytkownika została zmieniona');
     } catch (err) {
       console.error(err);
@@ -55,7 +75,10 @@ export default function Settings() {
     try {
       setSavingEmail(true);
       await api.patch('auth/change-email/', { email: newEmail });
+      localStorage.setItem('email', newEmail);
+      setCurrentEmail(newEmail);
       setNewEmail('');
+      window.dispatchEvent(new Event('user-updated'));
       toast.success('Adres e-mail został zmieniony');
     } catch (err) {
       console.error(err);
@@ -184,7 +207,7 @@ export default function Settings() {
             <input
               id="new-email"
               type="email"
-              placeholder="nowy@email.pl"
+              placeholder={currentEmail || 'nowy@email.pl'}
               className={inputClass}
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}

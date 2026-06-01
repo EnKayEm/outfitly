@@ -16,18 +16,36 @@ export default function Layout() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [username, setUsername] = useState('Użytkownik');
+  const [email, setEmail] = useState('');
   const userMenuRef = useRef(null);
 
   useEffect(() => {
-    const syncUsername = () => {
+    const syncFromStorage = () => {
       const storedUsername = localStorage.getItem('username');
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
+      if (storedUsername) setUsername(storedUsername);
+      const storedEmail = localStorage.getItem('email');
+      if (storedEmail) setEmail(storedEmail);
     };
-    syncUsername();
-    window.addEventListener('username-updated', syncUsername);
-    return () => window.removeEventListener('username-updated', syncUsername);
+    syncFromStorage();
+    window.addEventListener('user-updated', syncFromStorage);
+
+    // E-maila nie ma w tokenie JWT — dociągamy aktualne dane konta z API
+    if (isAuthenticated()) {
+      api.get('auth/me/')
+        .then((res) => {
+          if (res.data?.login) {
+            setUsername(res.data.login);
+            localStorage.setItem('username', res.data.login);
+          }
+          if (res.data?.email) {
+            setEmail(res.data.email);
+            localStorage.setItem('email', res.data.email);
+          }
+        })
+        .catch(() => { /* nie udało się pobrać danych konta — pomijamy */ });
+    }
+
+    return () => window.removeEventListener('user-updated', syncFromStorage);
   }, []);
 
   useEffect(() => {
@@ -52,6 +70,7 @@ export default function Layout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('username');
+      localStorage.removeItem('email');
       navigate('/login');
     }
   };
@@ -129,12 +148,15 @@ export default function Layout() {
 
                   {isUserMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 min-w-[11rem] max-w-[16rem] w-max bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-                      {/* Nagłówek: avatar + nazwa */}
+                      {/* Nagłówek: avatar + nazwa + e-mail */}
                       <div className="flex items-center gap-2.5 px-3 py-3 border-b border-slate-100">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-sm font-bold uppercase shrink-0">
                           {username.charAt(0)}
                         </div>
-                        <span className="text-sm font-semibold text-slate-800 truncate min-w-0">{username}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 truncate">{username}</p>
+                          {email && <p className="text-xs text-slate-400 truncate">{email}</p>}
+                        </div>
                       </div>
 
                       <div className="py-1.5">
