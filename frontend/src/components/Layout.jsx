@@ -1,10 +1,8 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import { Shirt, Sparkles, LayoutGrid, LogOut, ChevronDown, User, Mail, Lock, Phone, Menu, X } from 'lucide-react';
+import { Shirt, Sparkles, LayoutGrid, LogOut, ChevronDown, Settings, Phone, Menu, X } from 'lucide-react';
 import { isAuthenticated } from '../api/auth';
-import AccountSettingsModal from './AccountSettingsModal';
-import toast from 'react-hot-toast';
 
 const navLinks = [
   { to: '/dashboard',     label: 'Twoja Szafa',       Icon: LayoutGrid, activeClass: 'bg-blue-50 text-blue-700' },
@@ -19,13 +17,17 @@ export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [username, setUsername] = useState('Użytkownik');
   const userMenuRef = useRef(null);
-  const [settingsModal, setSettingsModal] = useState(null);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
+    const syncUsername = () => {
+      const storedUsername = localStorage.getItem('username');
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    };
+    syncUsername();
+    window.addEventListener('username-updated', syncUsername);
+    return () => window.removeEventListener('username-updated', syncUsername);
   }, []);
 
   useEffect(() => {
@@ -53,58 +55,6 @@ export default function Layout() {
       navigate('/login');
     }
   };
-  
-const changeUsername = async (login) => {
-  try {
-    await api.patch('auth/change-username/', { login });
-    localStorage.setItem('username', login);
-    setUsername(login);
-
-    toast.success('Nazwa użytkownika została zmieniona');
-
-  } catch (err) {
-    console.error(err);
-    toast.error('Błąd przy zmianie nazwy');
-  }
-};
-
-const changeEmail = async (email) => {
-  try {
-    await api.patch('auth/change-email/', { email });
-
-    toast.success('Email został zmieniony');
-
-  } catch (err) {
-    console.error(err);
-    toast.error('Błąd przy zmianie emaila');
-  }
-};
-
-const changePassword = async (oldPassword, newPassword) => {
-  try {
-    await api.patch('auth/change-password/', {
-      old_password: oldPassword,
-      new_password: newPassword,
-    });
-
-    toast.success('Hasło zostało zmienione');
-
-  } catch (err) {
-    console.error(err);
-    toast.error('Błąd przy zmianie hasła');
-  }
-};
-
-const handleSettingsSubmit = (val1, val2) => {
-  if (settingsModal === 'username') {
-    changeUsername(val1);
-  } else if (settingsModal === 'email') {
-    changeEmail(val1);
-  } else if (settingsModal === 'password') {
-    changePassword(val1, val2);
-  }
-};
-
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -178,40 +128,21 @@ const handleSettingsSubmit = (val1, val2) => {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
                       <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                        <p className="text-sm font-semibold text-slate-800">Ustawienia konta</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{username}</p>
+                        <p className="text-sm font-semibold text-slate-800">{username}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Twoje konto</p>
                       </div>
-                      
+
                       <div className="py-2">
-
-                        <div
-                          onClick={() => {setSettingsModal('username');setIsUserMenuOpen(false);}}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
+                        <button
+                          onClick={() => { setIsUserMenuOpen(false); navigate('/settings'); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                         >
-                          <User className="w-4 h-4" />
-                          <span className="text-sm">Zmień nazwę użytkownika</span>
-                        </div>
-
-                        <div
-                          onClick={() => {setSettingsModal('email');setIsUserMenuOpen(false);}}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
-                        >
-                          <Mail className="w-4 h-4" />
-                          <span className="text-sm">Zmień adres e-mail</span>
-                        </div>
-
-                        <div
-                          onClick={() => {setSettingsModal('password');setIsUserMenuOpen(false);}}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 cursor-pointer"
-                        >
-                          <Lock className="w-4 h-4" />
-                          <span className="text-sm">Zmień hasło</span>
-                        </div>
-
+                          <Settings className="w-4 h-4" />
+                          <span className="text-sm">Ustawienia</span>
+                        </button>
                       </div>
-
                     </div>
                   )}
                 </div>
@@ -303,14 +234,6 @@ const handleSettingsSubmit = (val1, val2) => {
           </Link>
         </div>
       </footer>
-
-      {settingsModal && (
-        <AccountSettingsModal
-          type={settingsModal}
-          onClose={() => setSettingsModal(null)}
-          onSubmit={handleSettingsSubmit}
-        />
-      )}
 
     </div>
   );
