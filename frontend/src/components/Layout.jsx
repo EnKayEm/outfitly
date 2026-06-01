@@ -147,9 +147,9 @@ export default function Layout() {
                         </button>
                         <button
                           onClick={() => { setIsUserMenuOpen(false); handleLogout(); }}
-                          className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                          className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         >
-                          <LogOut className="w-4 h-4 shrink-0 text-slate-400" />
+                          <LogOut className="w-4 h-4 shrink-0" />
                           <span className="text-sm whitespace-nowrap">Wyloguj</span>
                         </button>
                       </div>
