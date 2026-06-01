@@ -16,18 +16,36 @@ export default function Layout() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [username, setUsername] = useState('Użytkownik');
+  const [email, setEmail] = useState('');
   const userMenuRef = useRef(null);
 
   useEffect(() => {
-    const syncUsername = () => {
+    const syncFromStorage = () => {
       const storedUsername = localStorage.getItem('username');
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
+      if (storedUsername) setUsername(storedUsername);
+      const storedEmail = localStorage.getItem('email');
+      if (storedEmail) setEmail(storedEmail);
     };
-    syncUsername();
-    window.addEventListener('username-updated', syncUsername);
-    return () => window.removeEventListener('username-updated', syncUsername);
+    syncFromStorage();
+    window.addEventListener('user-updated', syncFromStorage);
+
+    // E-maila nie ma w tokenie JWT — dociągamy aktualne dane konta z API
+    if (isAuthenticated()) {
+      api.get('auth/me/')
+        .then((res) => {
+          if (res.data?.login) {
+            setUsername(res.data.login);
+            localStorage.setItem('username', res.data.login);
+          }
+          if (res.data?.email) {
+            setEmail(res.data.email);
+            localStorage.setItem('email', res.data.email);
+          }
+        })
+        .catch(() => { /* nie udało się pobrać danych konta — pomijamy */ });
+    }
+
+    return () => window.removeEventListener('user-updated', syncFromStorage);
   }, []);
 
   useEffect(() => {
@@ -52,6 +70,7 @@ export default function Layout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('username');
+      localStorage.removeItem('email');
       navigate('/login');
     }
   };
@@ -128,34 +147,37 @@ export default function Layout() {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-                      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                        <p className="text-sm font-semibold text-slate-800">{username}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">Twoje konto</p>
+                    <div className="absolute right-0 top-full mt-2 min-w-[11rem] max-w-[16rem] w-max bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                      {/* Nagłówek: avatar + nazwa + e-mail */}
+                      <div className="flex items-center gap-2.5 px-3 py-3 border-b border-slate-100">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-sm font-bold uppercase shrink-0">
+                          {username.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 truncate">{username}</p>
+                          {email && <p className="text-xs text-slate-400 truncate">{email}</p>}
+                        </div>
                       </div>
 
-                      <div className="py-2">
+                      <div className="py-1.5">
                         <button
                           onClick={() => { setIsUserMenuOpen(false); navigate('/settings'); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                          className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                         >
-                          <Settings className="w-4 h-4" />
-                          <span className="text-sm">Ustawienia</span>
+                          <Settings className="w-4 h-4 shrink-0 text-slate-400" />
+                          <span className="text-sm whitespace-nowrap">Ustawienia</span>
+                        </button>
+                        <button
+                          onClick={() => { setIsUserMenuOpen(false); handleLogout(); }}
+                          className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4 shrink-0" />
+                          <span className="text-sm whitespace-nowrap">Wyloguj</span>
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
-
-                {/* Logout Button */}
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-1.5"
-                  title="Wyloguj się"
-                >
-                  <LogOut aria-hidden="true" className="w-4 h-4" />
-                  <span className="hidden sm:inline">Wyloguj</span>
-                </button>
               </>
             ) : (
               /* Przyciski dla NIEzalogowanych */
