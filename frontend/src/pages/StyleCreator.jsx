@@ -158,10 +158,16 @@ export default function StyleCreator() {
     setSuccessMessage(null);
 
     try {
-      await api.post('clothes/suggest/confirm/', {
+      const res = await api.post('clothes/suggest/confirm/', {
         outfit_ids: generatedData.suggested_outfit_ids,
         occasion: generatedData.occasion 
       });
+      
+      const compositionId = res.data.id;
+
+      if (isFavorite) {
+        await api.patch(`compositions/${compositionId}/favourite/`);
+}
       
       setSuccessMessage('Stylizacja zapisana! Wracamy do menu...');
       
