@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
 import { X, Pencil, Trash2, Save, AlignLeft, Palette, Tags, Calendar, Heart } from 'lucide-react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import toast from 'react-hot-toast';
 
 export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSuccess, availableCategories = [] }) {
   const [clothing, setClothing] = useState(null);
@@ -145,6 +146,19 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     }
   };
 
+  const handleToggleFavorite = async () => {
+    try {
+      const res = await api.patch(`clothes/${clothingId}/favourite/`);
+
+      setIsFavorite(res.data.is_favourite);
+
+      onSuccess && onSuccess();
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -153,7 +167,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
     month: 'long',
     day: 'numeric'
   });
-};
+  };
 
   if (!isOpen) return null;
 
@@ -226,7 +240,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
                                 {formatDate(clothing.creation_date)}
                               </p>
                               <button
-                                onClick={() => setIsFavorite(prev => !prev)}
+                                onClick={handleToggleFavorite}
                                 title={isFavorite ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
                                 className={`p-2 rounded-lg transition-colors ${
                                   isFavorite
