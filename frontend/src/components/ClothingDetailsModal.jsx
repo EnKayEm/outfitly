@@ -44,7 +44,7 @@ export default function ClothingDetailsModal({ isOpen, onClose, clothingId, onSu
             }
             
             setClothing(data);
-            setIsFavorite(data.is_favourite || false);
+            setIsFavorite(Boolean(data.is_favourite));
         } catch (err) {
             setError('Nie udało się pobrać szczegółów ubrania.');
         } finally {
