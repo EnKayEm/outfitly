@@ -24,7 +24,7 @@ const teamEEiI = [
   {
     name: 'Wojciech Żurowski',
     role: 'Frontend Developer',
-    avatar: 'WZ',
+    avatar: 'WŻ',
     color: 'bg-pink-100 text-pink-600',
   },
   {
@@ -51,6 +51,20 @@ const teamEEiI = [
 //     color: 'bg-blue-100 text-blue-600', // kolor avatara
 //   },
 const teamManagement = [
+  
+  {
+    name: 'Zuzanna Powrózek',
+    role: 'Project Coordinator',
+    avatar: 'ZP',
+    color: 'bg-orange-100 text-orange-600',
+  },
+  {
+    name: 'Weronika Wicher',
+    role: 'Project Coordinator',
+    avatar: 'WW',
+    color: 'bg-teal-100 text-teal-600',
+  },
+
   // {
   //   name: '',
   //   role: '',
